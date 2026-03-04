@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FlavorMap</title>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{% url 'restaurants:home' %}">Home</a> |
+            <a href="{% url 'restaurants:list' %}">Restaurants</a> |
+            <a href="{% url 'restaurants:about' %}">About Us</a> |
+            <a href="{% url 'restaurants:contact' %}">Contact</a>
+        </nav>
+    </header>
+    <hr>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <hr>
+</body>
+</html>
