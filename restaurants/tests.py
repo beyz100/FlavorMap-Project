@@ -13,7 +13,7 @@ class MS1ViewsTest(TestCase):
         response = self.client.get(reverse('restaurants:list'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'restaurants/list.html')
-        self.assertContains(response, 'Burger King')
+        self.assertContains(response, 'KFC')
 
     def test_restaurant_detail_view(self):
         response = self.client.get(reverse('restaurants:detail', args=[1]))
