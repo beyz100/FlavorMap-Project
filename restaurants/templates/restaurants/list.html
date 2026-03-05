@@ -1,0 +1,13 @@
+{% extends 'restaurants/base.html' %}
+
+{% block content %}
+    <h2>Restaurant List</h2>
+    <ul>
+        {% for rest in restaurants %}
+            <li>
+                <strong>{{ rest.name }}</strong> - Category: {{ rest.category }} (Rating: {{ rest.rating }})
+                <a href="{% url 'restaurants:detail' rest.id %}">View Details</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

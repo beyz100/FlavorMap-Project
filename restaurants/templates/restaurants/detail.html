@@ -1,0 +1,12 @@
+{% extends 'restaurants/base.html' %}
+
+{% block content %}
+    <h2>{{ restaurant.name }} Details</h2>
+    <p><strong>Description:</strong> {{ restaurant.description }}</p>
+    <p><strong>Rating:</strong> {{ restaurant.rating }} / 5</p>
+    <p><strong>Address:</strong> {{ restaurant.address }}</p>
+    
+    {% if restaurant.rating >= 4.5 %}
+        <p><em>⭐ Highly recommended!</em></p>
+    {% endif %}
+{% endblock %}
