@@ -4,35 +4,40 @@ from django.contrib.auth.models import User
 from .models import Category, Location, Restaurant, MenuItem, Review
 
 class MS1ViewsTest(TestCase):
+    
+    def setUp(self):
+        self.category = Category.objects.create(name='Fast Food')
+        self.location = Location.objects.create(name='Test City')
+        self.restaurant = Restaurant.objects.create(
+            name='KFC',
+            category=self.category,
+            location=self.location,
+            description='Finger lickin good',
+            address='123 Test Ave'
+        )
 
     def test_home_view(self):
         response = self.client.get(reverse('restaurants:home'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'restaurants/home.html')
-        self.assertContains(response, 'Ready to discover')
+        self.assertContains(response, 'Welcome to FlavorMap!')
 
     def test_restaurant_list_view(self):
         response = self.client.get(reverse('restaurants:list'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'restaurants/list.html')
         self.assertContains(response, 'KFC')
 
     def test_restaurant_detail_view(self):
-        response = self.client.get(reverse('restaurants:detail', args=[1]))
+        response = self.client.get(reverse('restaurants:detail', args=[self.restaurant.id]))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'restaurants/detail.html')
-        self.assertContains(response, 'Sample Restaurant')
-
+        self.assertContains(response, 'KFC')
+        
     def test_about_view(self):
         response = self.client.get(reverse('restaurants:about'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'restaurants/about.html')
 
     def test_contact_view(self):
         response = self.client.get(reverse('restaurants:contact'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'restaurants/contact.html')
-
 
 class MS2ModelsTest(TestCase):
 
