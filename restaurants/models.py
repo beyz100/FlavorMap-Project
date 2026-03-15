@@ -5,6 +5,9 @@ from django.db.models import Avg
 class Category(models.Model):
     name = models.CharField(max_length=100)
 
+    class Meta:
+        verbose_name_plural = "Categories"
+
     def __str__(self):
         return self.name
 
@@ -35,6 +38,9 @@ class MenuItem(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    class Meta:
+        verbose_name_plural = "Menu Items"
 
     def __str__(self):
         return f"{self.name} - {self.restaurant.name}"
