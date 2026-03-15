@@ -1,7 +1,18 @@
 {% extends 'restaurants/base.html' %}
 
 {% block content %}
-    <h2>{{ title }}</h2>
-    <p>{{ welcome_message }}</p>
-    <p>Navigate through the menu to find your favorite restaurant.</p>
+    <h1>Welcome to FlavorMap!</h1>
+    <p>Discover the best places to eat.</p>
+
+    <h2>Featured Restaurants</h2>
+    <ul>
+        {% for restaurant in restaurants %}
+            <li>
+                <strong>{{ restaurant.name }}</strong> ({{ restaurant.category.name }})
+                - <a href="{% url 'restaurants:detail' restaurant.id %}">View Details</a>
+            </li>
+        {% empty %}
+            <li>No featured restaurants at the moment.</li>
+        {% endfor %}
+    </ul>
 {% endblock %}
