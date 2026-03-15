@@ -1,32 +1,29 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from .models import Restaurant, Category, Location
 
-def home_view(request):
-    context = {
-        'title': 'FlavorMap - Home',
-        'welcome_message': 'Ready to discover the best restaurants?'
-    }
-    return render(request, 'restaurants/home.html', context)
+def home(request):
+    featured_restaurants = Restaurant.objects.all().order_by('-id')[:3]
+    return render(request, 'restaurants/home.html', {'restaurants': featured_restaurants})
 
-def restaurant_list_view(request):
-    restaurants = [
-        {'id': 1, 'name': 'KFC', 'category': 'Fast Food', 'rating': 4.5},
-        {'id': 2, 'name': 'Sushico', 'category': 'Asian', 'rating': 4.8},
-        {'id': 3, 'name': 'Develi', 'category': 'Turkish', 'rating': 4.9},
-    ]
+def restaurant_list(request):
+    restaurants = Restaurant.objects.all()
     return render(request, 'restaurants/list.html', {'restaurants': restaurants})
 
-def restaurant_detail_view(request, id):
-    restaurant = {
-        'id': id,
-        'name': 'Sample Restaurant',
-        'description': 'Description of the amazing food here.',
-        'rating': 4.7,
-        'address': 'Bayside, Snake Hills'
+def restaurant_detail(request, id):
+    restaurant = get_object_or_404(Restaurant, id=id)
+    
+    menu_items = restaurant.menu_items.all()
+    reviews = restaurant.reviews.all().order_by('-created_at')
+    
+    context = {
+        'restaurant': restaurant,
+        'menu_items': menu_items,
+        'reviews': reviews,
     }
-    return render(request, 'restaurants/detail.html', {'restaurant': restaurant})
+    return render(request, 'restaurants/detail.html', context)
 
-def about_view(request):
-    return render(request, 'restaurants/about.html', {'title': 'About Us'})
+def about(request):
+    return render(request, 'restaurants/about.html')
 
-def contact_view(request):
-    return render(request, 'restaurants/contact.html', {'title': 'Contact'})
+def contact(request):
+    return render(request, 'restaurants/contact.html')
