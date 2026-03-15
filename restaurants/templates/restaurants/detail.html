@@ -1,12 +1,39 @@
 {% extends 'restaurants/base.html' %}
 
 {% block content %}
-    <h2>{{ restaurant.name }} Details</h2>
-    <p><strong>Description:</strong> {{ restaurant.description }}</p>
-    <p><strong>Rating:</strong> {{ restaurant.rating }} / 5</p>
+    <h2>{{ restaurant.name }}</h2>
+    <p><strong>Category:</strong> {{ restaurant.category.name }}</p>
+    <p><strong>Location:</strong> {{ restaurant.location.name|default:"Not specified" }}</p>
     <p><strong>Address:</strong> {{ restaurant.address }}</p>
+    <p><strong>Description:</strong> {{ restaurant.description }}</p>
+    <p><strong>Average Rating:</strong> {{ restaurant.average_rating }} ⭐</p>
+
+    <hr>
     
-    {% if restaurant.rating >= 4.5 %}
-        <p><em>⭐ Highly recommended!</em></p>
-    {% endif %}
+    <h3>Menu Items</h3>
+    <ul>
+        {% for item in menu_items %}
+            <li><strong>{{ item.name }}</strong> - ${{ item.price }} <br> <small>{{ item.description }}</small></li>
+        {% empty %}
+            <li>No menu items added for this restaurant yet.</li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+
+    <h3>Reviews</h3>
+    <ul>
+        {% for review in reviews %}
+            <li>
+                <strong>{{ review.user.username }}</strong> rated it {{ review.rating }} ⭐
+                <p>{{ review.comment }}</p>
+                <small><em>Posted on {{ review.created_at|date:"F d, Y" }}</em></small>
+            </li>
+        {% empty %}
+            <li>No reviews yet. Be the first to review!</li>
+        {% endfor %}
+    </ul>
+
+    <br>
+    <a href="{% url 'restaurants:list' %}">Back to Restaurant List</a>
 {% endblock %}
