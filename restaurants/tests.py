@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import Category, Location, Restaurant, MenuItem, Review
+from .models import Category, Favorite, Location, Restaurant, MenuItem, Review
 
 class MS1ViewsTest(TestCase):
     
@@ -84,3 +84,37 @@ class MS2ModelsTest(TestCase):
 
     def test_average_rating_without_reviews(self):
         self.assertEqual(self.restaurant.average_rating(), 0.0)
+
+
+class AuthProfileTest(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="profileuser", password="secret123")
+        self.category = Category.objects.create(name="Cafe")
+        self.location = Location.objects.create(name="Center")
+        self.restaurant = Restaurant.objects.create(
+            name="Cafe M",
+            category=self.category,
+            location=self.location,
+            description="Coffee",
+            address="1 Main St",
+        )
+        Review.objects.create(
+            restaurant=self.restaurant,
+            user=self.user,
+            rating=5,
+            comment="Great espresso",
+        )
+        Favorite.objects.create(user=self.user, restaurant=self.restaurant)
+
+    def test_profile_redirects_when_not_logged_in(self):
+        response = self.client.get(reverse("restaurants:profile"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(response.url.split("?")[0], "/accounts/login/")
+
+    def test_profile_lists_reviews_and_favorites_when_logged_in(self):
+        self.client.login(username="profileuser", password="secret123")
+        response = self.client.get(reverse("restaurants:profile"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Great espresso")
+        self.assertContains(response, "Cafe M")

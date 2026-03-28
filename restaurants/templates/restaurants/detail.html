@@ -21,6 +21,39 @@
 
     <hr>
 
+    {% if user.is_authenticated %}
+        <h3>Save this place</h3>
+        <form action="{% url 'restaurants:toggle_favorite' restaurant.id %}" method="post" style="margin-bottom:1.5rem;">
+            {% csrf_token %}
+            {% if is_favorite %}
+                <button type="submit">Remove from favorites</button>
+            {% else %}
+                <button type="submit">Save to favorites</button>
+            {% endif %}
+        </form>
+
+        <h3>Write a review</h3>
+        <form action="{% url 'restaurants:add_review' restaurant.id %}" method="post" style="margin-bottom:1.5rem;">
+            {% csrf_token %}
+            <p>
+                <label for="id_rating">Rating (1–5)</label><br>
+                <select name="rating" id="id_rating" required>
+                    <option value="" disabled selected>Choose…</option>
+                    {% for i in "12345" %}
+                        <option value="{{ i }}">{{ i }} stars</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p>
+                <label for="id_comment">Comment</label><br>
+                <textarea name="comment" id="id_comment" rows="4" cols="50" required></textarea>
+            </p>
+            <button type="submit">Submit review</button>
+        </form>
+    {% else %}
+        <p><a href="{% url 'login' %}?next={{ request.path }}">Log in</a> to save favorites or post a review.</p>
+    {% endif %}
+
     <h3>Reviews</h3>
     <ul>
         {% for review in reviews %}
