@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .models import Favorite, Restaurant, Review
+from .models import Category, Favorite, Location, Restaurant, Review
 
 
 def home(request):
@@ -100,3 +100,56 @@ def toggle_favorite(request, id):
     else:
         messages.success(request, "Saved to your favorites.")
     return redirect("restaurants:detail", id=id)
+
+
+@login_required
+def create_restaurant(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        category_id = request.POST.get("category")
+        location_id = request.POST.get("location")
+        description = request.POST.get("description")
+        address = request.POST.get("address")
+
+        restaurant = Restaurant.objects.create(
+            name=name,
+            category_id=category_id,
+            location_id=location_id,
+            description=description,
+            address=address,
+        )
+
+        return redirect("restaurants:detail", id=restaurant.id)
+
+    categories = Category.objects.all()
+    locations = Location.objects.all()
+
+    context = {
+        "categories": categories,
+        "locations": locations,
+    }
+
+    return render(request, "restaurants/create_restaurant.html", context)
+
+
+@login_required
+def edit_restaurant(request, id):
+    restaurant = get_object_or_404(Restaurant, id=id)
+
+    if request.method == "POST":
+        restaurant.name = request.POST.get("name")
+        restaurant.category_id = request.POST.get("category")
+        restaurant.location_id = request.POST.get("location")
+        restaurant.description = request.POST.get("description")
+        restaurant.address = request.POST.get("address")
+        restaurant.save()
+
+        return redirect("restaurants:detail", id=restaurant.id)
+
+    context = {
+        "restaurant": restaurant,
+        "categories": Category.objects.all(),
+        "locations": Location.objects.all(),
+    }
+
+    return render(request, "restaurants/edit_restaurant.html", context)

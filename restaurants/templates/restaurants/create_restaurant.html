@@ -1,0 +1,25 @@
+<h2>Create Restaurant</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <input type="text" name="name" placeholder="Restaurant Name"><br><br>
+
+    <select name="category">
+        {% for category in categories %}
+        <option value="{{ category.id }}">{{ category.name }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <select name="location">
+        {% for location in locations %}
+        <option value="{{ location.id }}">{{ location.name }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <textarea name="description"></textarea><br><br>
+
+    <input type="text" name="address"><br><br>
+
+    <button type="submit">Create Restaurant</button>
+</form>
