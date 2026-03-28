@@ -1,0 +1,36 @@
+{% extends 'restaurants/base.html' %}
+
+{% block content %}
+    <h1>Your profile</h1>
+    <p>Signed in as <strong>{{ user.username }}</strong>.</p>
+
+    <h2>Your reviews</h2>
+    {% if reviews %}
+        <ul>
+            {% for review in reviews %}
+                <li>
+                    <strong><a href="{% url 'restaurants:detail' review.restaurant.id %}">{{ review.restaurant.name }}</a></strong>
+                    — {{ review.rating }} ⭐
+                    <p>{{ review.comment }}</p>
+                    <small><em>{{ review.created_at|date:"F d, Y" }}</em></small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have not written any reviews yet.</p>
+    {% endif %}
+
+    <h2>Your favorites</h2>
+    {% if favorites %}
+        <ul>
+            {% for fav in favorites %}
+                <li>
+                    <a href="{% url 'restaurants:detail' fav.restaurant.id %}">{{ fav.restaurant.name }}</a>
+                    <small>— saved {{ fav.created_at|date:"M j, Y" }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no saved favorites yet. Open a restaurant page and use “Save to favorites”.</p>
+    {% endif %}
+{% endblock %}

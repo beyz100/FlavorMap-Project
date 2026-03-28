@@ -11,11 +11,27 @@
             <a href="{% url 'restaurants:list' %}">Restaurants</a> |
             <a href="{% url 'restaurants:about' %}">About Us</a> |
             <a href="{% url 'restaurants:contact' %}">Contact</a>
+            {% if user.is_authenticated %}
+                | <a href="{% url 'restaurants:profile' %}">Profile</a>
+                | <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Log out</button>
+                </form>
+            {% else %}
+                | <a href="{% url 'login' %}">Log in</a>
+            {% endif %}
         </nav>
     </header>
     <hr>
 
     <main>
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         {% block content %}
         {% endblock %}
     </main>
