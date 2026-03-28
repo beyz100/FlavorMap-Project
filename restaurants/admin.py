@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Category, Favorite, Location, Restaurant, MenuItem, Review
+from .models import (
+    Category,
+    Favorite,
+    Location,
+    OpeningHours,
+    Restaurant,
+    MenuItem,
+    Review,
+)
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -35,3 +43,9 @@ class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('user', 'restaurant', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('restaurant__name', 'user__username')
+
+
+@admin.register(OpeningHours)
+class OpeningHoursAdmin(admin.ModelAdmin):
+    list_display = ('restaurant', 'day', 'open_time', 'close_time')
+    list_filter = ('day',)

@@ -21,7 +21,7 @@ jobs:
     - name: Install Requirements (Django)
       run: |
         python -m pip install --upgrade pip
-        pip install django
+        pip install -r requirements.txt
 
     - name: Run Django Tests
       run: |

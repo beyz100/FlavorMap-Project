@@ -1,0 +1,29 @@
+<h2>Edit Restaurant</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <input type="text" name="name" value="{{ restaurant.name }}"><br><br>
+
+    <select name="category">
+        {% for category in categories %}
+            <option value="{{ category.id }}" {% if restaurant.category.id == category.id %}selected{% endif %}>
+                {{ category.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <select name="location">
+        {% for location in locations %}
+            <option value="{{ location.id }}" {% if restaurant.location.id == location.id %}selected{% endif %}>
+                {{ location.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <textarea name="description">{{ restaurant.description }}</textarea><br><br>
+
+    <input type="text" name="address" value="{{ restaurant.address }}"><br><br>
+
+    <button type="submit">Update Restaurant</button>
+</form>

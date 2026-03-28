@@ -24,6 +24,16 @@ class Restaurant(models.Model):
     description = models.TextField()
     address = models.CharField(max_length=255)
 
+    PRICE_CHOICES = [
+        ('1', '€'),
+        ('2', '€€'),
+        ('3', '€€€'),
+    ]
+
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    price_range = models.CharField(max_length=1, choices=PRICE_CHOICES, default='2')
+    photo = models.ImageField(upload_to='restaurant_photos/', blank=True, null=True)
+
     def __str__(self):
         return self.name
 
@@ -51,6 +61,7 @@ class Review(models.Model):
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
 
     def __str__(self):
         return f"{self.restaurant.name} - {self.user.username}"
@@ -73,3 +84,21 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} → {self.restaurant.name}"
+
+
+class OpeningHours(models.Model):
+    DAY_CHOICES = [
+        (1, 'Monday'), (2, 'Tuesday'), (3, 'Wednesday'),
+        (4, 'Thursday'), (5, 'Friday'), (6, 'Saturday'), (7, 'Sunday'),
+    ]
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='opening_hours')
+    day = models.IntegerField(choices=DAY_CHOICES)
+    open_time = models.TimeField()
+    close_time = models.TimeField()
+
+    class Meta:
+        ordering = ['day']
+        unique_together = ('restaurant', 'day')
+
+    def __str__(self):
+        return f"{self.restaurant.name} - {self.get_day_display()}"
