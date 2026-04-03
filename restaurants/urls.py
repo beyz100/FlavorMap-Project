@@ -12,6 +12,7 @@ urlpatterns = [
         views.add_review,
         name='add_review',
     ),
+    path('restaurants/<int:id>/delete/', views.delete_restaurant, name='delete_restaurant'),
     path(
         'restaurants/<int:id>/favorite/',
         views.toggle_favorite,
@@ -22,4 +23,7 @@ urlpatterns = [
     path('contact/', views.contact, name='contact'),
     path('restaurants/create/', views.create_restaurant, name='create_restaurant'),
     path('restaurants/<int:id>/edit/', views.edit_restaurant, name='edit_restaurant'),
+    path('restaurants/<int:id>/menu/add/', views.add_menu_item, name='add_menu_item'),
+    path('menu/<int:id>/delete/', views.delete_menu_item, name='delete_menu_item'),
+    path('menu/<int:id>/edit/', views.edit_menu_item, name='edit_menu_item'),
 ]

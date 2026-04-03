@@ -14,6 +14,12 @@
     <ul>
         {% for item in menu_items %}
             <li><strong>{{ item.name }}</strong> - ${{ item.price }} <br> <small>{{ item.description }}</small></li>
+            <a href="{% url 'restaurants:delete_menu_item' item.id %}">
+                <button>Delete</button>
+            </a>
+            <a href="{% url 'restaurants:edit_menu_item' item.id %}">
+                <button>Edit</button>
+            </a>
         {% empty %}
             <li>No menu items added for this restaurant yet.</li>
         {% endfor %}
@@ -69,4 +75,12 @@
 
     <br>
     <a href="{% url 'restaurants:list' %}">Back to Restaurant List</a>
-{% endblock %}
+    
+    <a href="{% url 'restaurants:delete_restaurant' restaurant.id %}">
+        <button>Delete</button>
+    </a>
+    <a href="{% url 'restaurants:add_menu_item' restaurant.id %}">
+        <button>Add Menu Item</button>
+    </a>
+    {% endblock %}
+
