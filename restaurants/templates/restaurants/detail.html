@@ -23,7 +23,7 @@
     <h3>Menu Items</h3>
     <ul>
         {% for item in menu_items %}
-            <li><strong>{{ item.name }}</strong> - ${{ item.price }} <br> <small>{{ item.description }}</small></li>
+            <li><strong>{{ item.name }}</strong> - ₺{{ item.price }} <br> <small>{{ item.description }}</small></li>
             {% if can_manage_restaurant %}
             <a href="{% url 'restaurants:delete_menu_item' item.id %}">
                 <button>Delete</button>
