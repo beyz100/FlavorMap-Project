@@ -22,4 +22,9 @@ urlpatterns = [
     path('contact/', views.contact, name='contact'),
     path('restaurants/create/', views.create_restaurant, name='create_restaurant'),
     path('restaurants/<int:id>/edit/', views.edit_restaurant, name='edit_restaurant'),
+    path(
+        'restaurants/<int:id>/delete/',
+        views.delete_restaurant,
+        name='delete_restaurant',
+    ),
 ]

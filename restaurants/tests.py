@@ -118,3 +118,54 @@ class AuthProfileTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Great espresso")
         self.assertContains(response, "Cafe M")
+
+
+class RestaurantOwnerAuthorizationTest(TestCase):
+
+    def setUp(self):
+        self.owner = User.objects.create_user(username="owner1", password="pass12345")
+        self.other = User.objects.create_user(username="other1", password="pass12345")
+        self.category = Category.objects.create(name="Diner")
+        self.location = Location.objects.create(name="North")
+        self.restaurant = Restaurant.objects.create(
+            name="Owned Place",
+            owner=self.owner,
+            category=self.category,
+            location=self.location,
+            description="Food",
+            address="9 Road",
+        )
+
+    def test_owner_can_open_edit_page(self):
+        self.client.login(username="owner1", password="pass12345")
+        r = self.client.get(
+            reverse("restaurants:edit_restaurant", args=[self.restaurant.id])
+        )
+        self.assertEqual(r.status_code, 200)
+
+    def test_non_owner_cannot_open_edit_page(self):
+        self.client.login(username="other1", password="pass12345")
+        r = self.client.get(
+            reverse("restaurants:edit_restaurant", args=[self.restaurant.id]),
+            follow=False,
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(
+            r.url, reverse("restaurants:detail", args=[self.restaurant.id])
+        )
+
+    def test_non_owner_cannot_delete(self):
+        self.client.login(username="other1", password="pass12345")
+        r = self.client.post(
+            reverse("restaurants:delete_restaurant", args=[self.restaurant.id]),
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(Restaurant.objects.filter(pk=self.restaurant.pk).exists())
+
+    def test_owner_can_delete(self):
+        self.client.login(username="owner1", password="pass12345")
+        rid = self.restaurant.id
+        r = self.client.post(reverse("restaurants:delete_restaurant", args=[rid]))
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r.url, reverse("restaurants:list"))
+        self.assertFalse(Restaurant.objects.filter(pk=rid).exists())

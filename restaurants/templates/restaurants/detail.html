@@ -8,6 +8,16 @@
     <p><strong>Description:</strong> {{ restaurant.description }}</p>
     <p><strong>Average Rating:</strong> {{ restaurant.average_rating }} ⭐</p>
 
+    {% if can_manage_restaurant %}
+        <p>
+            <a href="{% url 'restaurants:edit_restaurant' restaurant.id %}">Edit restaurant</a>
+        </p>
+        <form action="{% url 'restaurants:delete_restaurant' restaurant.id %}" method="post" style="display:inline;" onsubmit="return confirm('Delete this restaurant? This cannot be undone.');">
+            {% csrf_token %}
+            <button type="submit">Delete restaurant</button>
+        </form>
+    {% endif %}
+
     <hr>
     
     <h3>Menu Items</h3>
