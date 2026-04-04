@@ -6,6 +6,10 @@ from django.views.decorators.http import require_POST
 from .models import Category, Favorite, Location, Restaurant, Review
 
 
+def _user_owns_restaurant(user, restaurant):
+    return restaurant.owner_id is not None and restaurant.owner_id == user.pk
+
+
 def home(request):
     featured_restaurants = Restaurant.objects.all().order_by("-id")[:3]
     return render(request, "restaurants/home.html", {"restaurants": featured_restaurants})
@@ -23,16 +27,19 @@ def restaurant_detail(request, id):
     reviews = restaurant.reviews.all().order_by("-created_at")
 
     is_favorite = False
+    can_manage_restaurant = False
     if request.user.is_authenticated:
         is_favorite = Favorite.objects.filter(
             user=request.user, restaurant=restaurant
         ).exists()
+        can_manage_restaurant = _user_owns_restaurant(request.user, restaurant)
 
     context = {
         "restaurant": restaurant,
         "menu_items": menu_items,
         "reviews": reviews,
         "is_favorite": is_favorite,
+        "can_manage_restaurant": can_manage_restaurant,
     }
     return render(request, "restaurants/detail.html", context)
 
@@ -113,6 +120,7 @@ def create_restaurant(request):
 
         restaurant = Restaurant.objects.create(
             name=name,
+            owner=request.user,
             category_id=category_id,
             location_id=location_id,
             description=description,
@@ -136,6 +144,13 @@ def create_restaurant(request):
 def edit_restaurant(request, id):
     restaurant = get_object_or_404(Restaurant, id=id)
 
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(
+            request,
+            "You can only edit restaurants you created.",
+        )
+        return redirect("restaurants:detail", id=id)
+
     if request.method == "POST":
         restaurant.name = request.POST.get("name")
         restaurant.category_id = request.POST.get("category")
@@ -153,3 +168,20 @@ def edit_restaurant(request, id):
     }
 
     return render(request, "restaurants/edit_restaurant.html", context)
+
+
+@login_required
+@require_POST
+def delete_restaurant(request, id):
+    restaurant = get_object_or_404(Restaurant, id=id)
+
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(
+            request,
+            "You can only delete restaurants you created.",
+        )
+        return redirect("restaurants:detail", id=id)
+
+    restaurant.delete()
+    messages.success(request, "Restaurant removed.")
+    return redirect("restaurants:list")

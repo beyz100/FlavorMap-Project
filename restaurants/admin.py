@@ -21,7 +21,7 @@ class LocationAdmin(admin.ModelAdmin):
 
 @admin.register(Restaurant)
 class RestaurantAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'location', 'average_rating')
+    list_display = ('name', 'owner', 'category', 'location', 'average_rating')
     list_filter = ('category', 'location')
     search_fields = ('name', 'description')
 

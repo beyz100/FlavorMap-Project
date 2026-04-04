@@ -19,6 +19,7 @@ class Location(models.Model):
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=200)
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='owned_restaurants')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='restaurants')
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name='restaurants')
     description = models.TextField()
