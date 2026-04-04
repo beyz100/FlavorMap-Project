@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .models import Category, Favorite, Location, Restaurant, Review
+from .models import Category, Favorite, Location, Restaurant, Review, MenuItem
 
 
 def _user_owns_restaurant(user, restaurant):
@@ -185,3 +185,47 @@ def delete_restaurant(request, id):
     restaurant.delete()
     messages.success(request, "Restaurant removed.")
     return redirect("restaurants:list")
+
+
+@login_required
+def add_menu_item(request, id):
+    restaurant = get_object_or_404(Restaurant, id=id)
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        description = request.POST.get("description")
+        price = request.POST.get("price")
+
+        MenuItem.objects.create(
+            restaurant=restaurant,
+            name=name,
+            description=description,
+            price=price
+        )
+
+        return redirect("restaurants:detail", id=restaurant.id)
+
+    return render(request, "restaurants/add_menu_item.html", {"restaurant": restaurant})
+
+
+@login_required
+def delete_menu_item(request, id):
+    menu_item = get_object_or_404(MenuItem, id=id)
+    restaurant_id = menu_item.restaurant.id
+    menu_item.delete()
+    return redirect('restaurants:detail', id=restaurant_id)
+
+
+@login_required
+def edit_menu_item(request, id):
+    menu_item = get_object_or_404(MenuItem, id=id)
+
+    if request.method == "POST":
+        menu_item.name = request.POST.get("name")
+        menu_item.description = request.POST.get("description")
+        menu_item.price = request.POST.get("price")
+        menu_item.save()
+
+        return redirect("restaurants:detail", id=menu_item.restaurant.id)
+
+    return render(request, "restaurants/edit_menu_item.html", {"menu_item": menu_item})
