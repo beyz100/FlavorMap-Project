@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .models import Category, Favorite, Location, Restaurant, Review, MenuItem
+from .forms import RestaurantForm, MenuItemForm
 
 
 def _user_owns_restaurant(user, restaurant):
@@ -112,32 +113,16 @@ def toggle_favorite(request, id):
 @login_required
 def create_restaurant(request):
     if request.method == "POST":
-        name = request.POST.get("name")
-        category_id = request.POST.get("category")
-        location_id = request.POST.get("location")
-        description = request.POST.get("description")
-        address = request.POST.get("address")
+        form = RestaurantForm(request.POST, request.FILES)
+        if form.is_valid():
+            restaurant = form.save(commit=False)
+            restaurant.owner = request.user
+            restaurant.save()
+            return redirect("restaurants:detail", id=restaurant.id)
+    else:
+        form = RestaurantForm()
 
-        restaurant = Restaurant.objects.create(
-            name=name,
-            owner=request.user,
-            category_id=category_id,
-            location_id=location_id,
-            description=description,
-            address=address,
-        )
-
-        return redirect("restaurants:detail", id=restaurant.id)
-
-    categories = Category.objects.all()
-    locations = Location.objects.all()
-
-    context = {
-        "categories": categories,
-        "locations": locations,
-    }
-
-    return render(request, "restaurants/create_restaurant.html", context)
+    return render(request, "restaurants/create_restaurant.html", {"form": form})
 
 
 @login_required
@@ -152,22 +137,14 @@ def edit_restaurant(request, id):
         return redirect("restaurants:detail", id=id)
 
     if request.method == "POST":
-        restaurant.name = request.POST.get("name")
-        restaurant.category_id = request.POST.get("category")
-        restaurant.location_id = request.POST.get("location")
-        restaurant.description = request.POST.get("description")
-        restaurant.address = request.POST.get("address")
-        restaurant.save()
+        form = RestaurantForm(request.POST, request.FILES, instance=restaurant)
+        if form.is_valid():
+            form.save()
+            return redirect("restaurants:detail", id=restaurant.id)
+    else:
+        form = RestaurantForm(instance=restaurant)
 
-        return redirect("restaurants:detail", id=restaurant.id)
-
-    context = {
-        "restaurant": restaurant,
-        "categories": Category.objects.all(),
-        "locations": Location.objects.all(),
-    }
-
-    return render(request, "restaurants/edit_restaurant.html", context)
+    return render(request, "restaurants/edit_restaurant.html", {"form": form, "restaurant": restaurant})
 
 
 @login_required
@@ -191,41 +168,51 @@ def delete_restaurant(request, id):
 def add_menu_item(request, id):
     restaurant = get_object_or_404(Restaurant, id=id)
 
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(request, "You can only add menu items to restaurants you created.")
+        return redirect("restaurants:detail", id=id)
+
     if request.method == "POST":
-        name = request.POST.get("name")
-        description = request.POST.get("description")
-        price = request.POST.get("price")
+        form = MenuItemForm(request.POST)
+        if form.is_valid():
+            menu_item = form.save(commit=False)
+            menu_item.restaurant = restaurant
+            menu_item.save()
+            return redirect("restaurants:detail", id=restaurant.id)
+    else:
+        form = MenuItemForm()
 
-        MenuItem.objects.create(
-            restaurant=restaurant,
-            name=name,
-            description=description,
-            price=price
-        )
-
-        return redirect("restaurants:detail", id=restaurant.id)
-
-    return render(request, "restaurants/add_menu_item.html", {"restaurant": restaurant})
+    return render(request, "restaurants/add_menu_item.html", {"form": form, "restaurant": restaurant})
 
 
 @login_required
 def delete_menu_item(request, id):
     menu_item = get_object_or_404(MenuItem, id=id)
-    restaurant_id = menu_item.restaurant.id
+    restaurant = menu_item.restaurant
+
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(request, "You can only delete menu items from restaurants you created.")
+        return redirect("restaurants:detail", id=restaurant.id)
+
     menu_item.delete()
-    return redirect('restaurants:detail', id=restaurant_id)
+    return redirect('restaurants:detail', id=restaurant.id)
 
 
 @login_required
 def edit_menu_item(request, id):
     menu_item = get_object_or_404(MenuItem, id=id)
+    restaurant = menu_item.restaurant
+
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(request, "You can only edit menu items of restaurants you created.")
+        return redirect("restaurants:detail", id=restaurant.id)
 
     if request.method == "POST":
-        menu_item.name = request.POST.get("name")
-        menu_item.description = request.POST.get("description")
-        menu_item.price = request.POST.get("price")
-        menu_item.save()
+        form = MenuItemForm(request.POST, instance=menu_item)
+        if form.is_valid():
+            form.save()
+            return redirect("restaurants:detail", id=restaurant.id)
+    else:
+        form = MenuItemForm(instance=menu_item)
 
-        return redirect("restaurants:detail", id=menu_item.restaurant.id)
-
-    return render(request, "restaurants/edit_menu_item.html", {"menu_item": menu_item})
+    return render(request, "restaurants/edit_menu_item.html", {"form": form, "menu_item": menu_item})
