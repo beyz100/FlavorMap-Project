@@ -17,8 +17,33 @@ def home(request):
 
 
 def restaurant_list(request):
+    query = request.GET.get("q")
+    category = request.GET.get("category")
+    location = request.GET.get("location")
+    price = request.GET.get("price")
+
     restaurants = Restaurant.objects.all()
-    return render(request, "restaurants/list.html", {"restaurants": restaurants})
+
+    if query:
+        restaurants = restaurants.filter(name__icontains=query)
+
+    if category:
+        restaurants = restaurants.filter(category_id=category)
+
+    if location:
+        restaurants = restaurants.filter(location_id=location)
+
+    if price:
+        restaurants = restaurants.filter(price_range=price)
+
+    categories = Category.objects.all()
+    locations = Location.objects.all()
+
+    return render(request, "restaurants/list.html", {
+        "restaurants": restaurants,
+        "categories": categories,
+        "locations": locations,
+    })
 
 
 def restaurant_detail(request, id):
@@ -195,7 +220,7 @@ def delete_menu_item(request, id):
         return redirect("restaurants:detail", id=restaurant.id)
 
     menu_item.delete()
-    return redirect('restaurants:detail', id=restaurant.id)
+    return redirect("restaurants:detail", id=restaurant.id)
 
 
 @login_required

@@ -1,18 +1,46 @@
 {% extends 'restaurants/base.html' %}
 
 {% block content %}
-    <h2>Restaurant List</h2>
-    <ul>
-        {% for restaurant in restaurants %}
-            <li>
-                <strong>{{ restaurant.name }}</strong> - 
-                Category: {{ restaurant.category.name }} | 
-                Location: {{ restaurant.location.name|default:"Not specified" }} |
-                Rating: {{ restaurant.average_rating }} ⭐
-                <a href="{% url 'restaurants:detail' restaurant.id %}">View Details</a>
-            </li>
-        {% empty %}
-            <li>No restaurants available in the database yet.</li>
+
+<h2>Restaurant List</h2>
+
+<form method="GET">
+    <input type="text" name="q" placeholder="Search restaurants..." value="{{ request.GET.q }}">
+    
+    <select name="category">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
         {% endfor %}
-    </ul>
+    </select>
+    <select name="location">
+        <option value="">All Locations</option>
+        {% for loc in locations %}
+            <option value="{{ loc.id }}" {% if request.GET.location == loc.id|stringformat:"s" %}selected{% endif %}>{{ loc.name }}</option>
+        {% endfor %}
+    </select>
+    <select name="price">
+        <option value="">All Prices</option>
+        <option value="1" {% if request.GET.price == "1" %}selected{% endif %}>$</option>
+        <option value="2" {% if request.GET.price == "2" %}selected{% endif %}>$$</option>
+        <option value="3" {% if request.GET.price == "3" %}selected{% endif %}>$$$</option>
+    </select>
+    <button type="submit">Filter</button>
+</form>
+
+<ul>
+    {% for restaurant in restaurants %}
+        <li>
+            <strong>{{ restaurant.name }}</strong> -
+            Category: {{ restaurant.category.name }} |
+            Location: {{ restaurant.location.name|default:"Not specified" }} |
+            Rating: {{ restaurant.average_rating }} |
+            Price: {{ restaurant.price_range }} |
+            <a href="{% url 'restaurants:detail' restaurant.id %}">View Details</a>
+        </li>
+    {% empty %}
+        <li>No restaurants found.</li>
+    {% endfor %}
+</ul>
+
 {% endblock %}
