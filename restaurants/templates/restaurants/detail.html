@@ -7,6 +7,15 @@
     <p><strong>Address:</strong> {{ restaurant.address }}</p>
     <p><strong>Description:</strong> {{ restaurant.description }}</p>
     <p><strong>Average Rating:</strong> {{ restaurant.average_rating }} ⭐</p>
+    {% if user.is_authenticated %}
+    {% if is_favorited %}
+        <a href="{% url 'restaurants:toggle_favorite' restaurant.id %}">Remove from Favorites</a>
+    {% else %}
+        <a href="{% url 'restaurants:toggle_favorite' restaurant.id %}">Add to Favorites</a>
+    {% endif %}
+{% else %}
+    <p>Please log in to add to favorites.</p>
+{% endif %}
 
     <hr>
     
@@ -23,7 +32,7 @@
 
     <h3>Reviews</h3>
     <ul>
-        {% for review in reviews %}
+        {% for review in reviews %}‚
             <li>
                 <strong>{{ review.user.username }}</strong> rated it {{ review.rating }} ⭐
                 <p>{{ review.comment }}</p>
