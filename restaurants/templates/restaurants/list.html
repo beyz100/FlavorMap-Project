@@ -21,9 +21,9 @@
     </select>
     <select name="price">
         <option value="">All Prices</option>
-        <option value="1" {% if request.GET.price == "1" %}selected{% endif %}>$</option>
-        <option value="2" {% if request.GET.price == "2" %}selected{% endif %}>$$</option>
-        <option value="3" {% if request.GET.price == "3" %}selected{% endif %}>$$$</option>
+        <option value="1" {% if request.GET.price == "1" %}selected{% endif %}>₺</option>
+        <option value="2" {% if request.GET.price == "2" %}selected{% endif %}>₺₺</option>
+        <option value="3" {% if request.GET.price == "3" %}selected{% endif %}>₺₺₺</option>
     </select>
     <button type="submit">Filter</button>
 </form>

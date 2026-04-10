@@ -26,9 +26,9 @@ class Restaurant(models.Model):
     address = models.CharField(max_length=255)
 
     PRICE_CHOICES = [
-        ('1', '€'),
-        ('2', '€€'),
-        ('3', '€€€'),
+        ('1', '₺'),
+        ('2', '₺₺'),
+        ('3', '₺₺₺'),
     ]
 
     phone = models.CharField(max_length=20, blank=True, null=True)
