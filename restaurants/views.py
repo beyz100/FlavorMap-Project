@@ -245,3 +245,5 @@ def edit_menu_item(request, id):
         form = MenuItemForm(instance=menu_item)
 
     return render(request, "restaurants/edit_menu_item.html", {"form": form, "menu_item": menu_item})
+    # small changes
+    
