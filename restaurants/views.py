@@ -226,6 +226,7 @@ def delete_menu_item(request, id):
     return redirect("restaurants:detail", id=restaurant.id)
 
 
+
 @login_required
 def edit_menu_item(request, id):
     menu_item = get_object_or_404(MenuItem, id=id)
