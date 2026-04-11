@@ -35,7 +35,7 @@
             Category: {{ restaurant.category.name }} |
             Location: {{ restaurant.location.name|default:"Not specified" }} |
             Rating: {{ restaurant.annotated_avg_rating|default:0|floatformat:1 }} |
-            Price: {{ restaurant.price_range }} |
+            Price: {{ restaurant.get_price_range_display }} |
             <a href="{% url 'restaurants:detail' restaurant.id %}">View Details</a>
         </li>
     {% empty %}
