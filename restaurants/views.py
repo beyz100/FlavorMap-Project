@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
+from django.db.models import Avg
 
 from .models import Category, Favorite, Location, Restaurant, Review, MenuItem
 from .forms import RestaurantForm, MenuItemForm
@@ -12,7 +13,7 @@ def _user_owns_restaurant(user, restaurant):
 
 
 def home(request):
-    featured_restaurants = Restaurant.objects.all().order_by("-id")[:3]
+    featured_restaurants = Restaurant.objects.select_related('category').order_by("-id")[:3]
     return render(request, "restaurants/home.html", {"restaurants": featured_restaurants})
 
 
@@ -22,7 +23,9 @@ def restaurant_list(request):
     location = request.GET.get("location")
     price = request.GET.get("price")
 
-    restaurants = Restaurant.objects.all()
+    restaurants = Restaurant.objects.select_related('category', 'location').annotate(
+        annotated_avg_rating=Avg('reviews__rating')
+    )
 
     if query:
         restaurants = restaurants.filter(name__icontains=query)
