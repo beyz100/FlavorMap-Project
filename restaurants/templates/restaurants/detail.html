@@ -2,11 +2,24 @@
 
 {% block content %}
     <h2>{{ restaurant.name }}</h2>
+    {% if restaurant.photo %}
+        <div style="margin-bottom: 15px;">
+            <img src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}" style="max-width: 100%; height: auto; max-height: 400px; border-radius: 8px; object-fit: cover;">
+        </div>
+    {% endif %}
     <p><strong>Category:</strong> {{ restaurant.category.name }}</p>
     <p><strong>Location:</strong> {{ restaurant.location.name|default:"Not specified" }}</p>
     <p><strong>Address:</strong> {{ restaurant.address }}</p>
     <p><strong>Description:</strong> {{ restaurant.description }}</p>
     <p><strong>Average Rating:</strong> {{ restaurant.average_rating }} ⭐</p>
+    <p><strong>Opening Hours:</strong></p>
+    <ul>
+        {% for hours in restaurant.opening_hours.all %}
+            <li>{{ hours.get_day_display }}: {{ hours.open_time|time:"H:i" }} - {{ hours.close_time|time:"H:i" }}</li>
+        {% empty %}
+            <li>Not specified</li>
+        {% endfor %}
+    </ul>
 
     {% if can_manage_restaurant %}
         <p>

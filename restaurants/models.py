@@ -89,11 +89,11 @@ class Favorite(models.Model):
 
 class OpeningHours(models.Model):
     DAY_CHOICES = [
-        (1, 'Monday'), (2, 'Tuesday'), (3, 'Wednesday'),
-        (4, 'Thursday'), (5, 'Friday'), (6, 'Saturday'), (7, 'Sunday'),
+        ('weekdays', 'Weekdays'),
+        ('weekends', 'Weekends'),
     ]
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='opening_hours')
-    day = models.IntegerField(choices=DAY_CHOICES)
+    day = models.CharField(max_length=20, choices=DAY_CHOICES)
     open_time = models.TimeField()
     close_time = models.TimeField()
 
