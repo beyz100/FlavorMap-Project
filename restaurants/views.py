@@ -3,9 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.db.models import Avg
+from django.db import transaction, IntegrityError
 
 from .models import Category, Favorite, Location, Restaurant, Review, MenuItem
-from .forms import RestaurantForm, MenuItemForm
+from .forms import RestaurantForm, MenuItemForm, ReviewForm, ReplyForm
 
 
 def _user_owns_restaurant(user, restaurant):
@@ -53,7 +54,8 @@ def restaurant_detail(request, id):
     restaurant = get_object_or_404(Restaurant, id=id)
 
     menu_items = restaurant.menu_items.all()
-    reviews = restaurant.reviews.all().order_by("-created_at")
+    reviews = restaurant.reviews.filter(parent__isnull=True).order_by("-created_at")
+    review_form = ReviewForm()
 
     is_favorite = False
     can_manage_restaurant = False
@@ -69,6 +71,7 @@ def restaurant_detail(request, id):
         "reviews": reviews,
         "is_favorite": is_favorite,
         "can_manage_restaurant": can_manage_restaurant,
+        "review_form": review_form,
     }
     return render(request, "restaurants/detail.html", context)
 
@@ -100,27 +103,86 @@ def user_profile(request):
 @require_POST
 def add_review(request, id):
     restaurant = get_object_or_404(Restaurant, id=id)
-    try:
-        rating = int(request.POST.get("rating", ""))
-    except (TypeError, ValueError):
-        rating = 0
-    if rating not in range(1, 6):
-        messages.error(request, "Please choose a rating from 1 to 5.")
+    form = ReviewForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(request, "Invalid input.")
         return redirect("restaurants:detail", id=id)
 
-    comment = (request.POST.get("comment") or "").strip()
-    if not comment:
-        messages.error(request, "Please write a comment for your review.")
-        return redirect("restaurants:detail", id=id)
-
-    Review.objects.create(
+    if Review.objects.filter(
         restaurant=restaurant,
         user=request.user,
-        rating=rating,
-        comment=comment,
-    )
-    messages.success(request, "Thanks — your review was posted.")
+        parent__isnull=True
+    ).exists():
+        messages.error(request, "You have already reviewed this restaurant.")
+        return redirect("restaurants:detail", id=id)
+
+    review = form.save(commit=False)
+    review.restaurant = restaurant
+    review.user = request.user
+    review.parent = None
+    review.save()
+
+    messages.success(request, "Review added.")
     return redirect("restaurants:detail", id=id)
+
+@login_required
+def edit_review(request, id):
+    review = get_object_or_404(Review, id=id, parent__isnull=True)
+
+    if review.user != request.user:
+        messages.error(request, "You can only edit your own reviews.")
+        return redirect("restaurants:detail", id=review.restaurant.id)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Review updated.")
+            return redirect("restaurants:detail", id=review.restaurant.id)
+    else:
+        form = ReviewForm(instance=review)
+
+    return render(request, "restaurants/edit_review.html", {
+        "form": form,
+        "review": review,
+    })
+
+
+@login_required
+@require_POST
+def delete_review(request, id):
+    review = get_object_or_404(Review, id=id)
+
+    if review.user != request.user:
+        messages.error(request, "You can only delete your own reviews.")
+        return redirect("restaurants:detail", id=review.restaurant.id)
+
+    restaurant_id = review.restaurant.id
+    review.delete()
+    messages.success(request, "Review deleted.")
+    return redirect("restaurants:detail", id=restaurant_id)
+
+
+@login_required
+@require_POST
+def add_reply(request, id):
+    parent_review = get_object_or_404(Review, id=id, parent__isnull=True)
+    form = ReplyForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(request, "Reply cannot be empty.")
+        return redirect("restaurants:detail", id=parent_review.restaurant.id)
+
+    reply = form.save(commit=False)
+    reply.restaurant = parent_review.restaurant
+    reply.user = request.user
+    reply.parent = parent_review
+    reply.rating = None
+    reply.save()
+
+    messages.success(request, "Reply added.")
+    return redirect("restaurants:detail", id=parent_review.restaurant.id)
 
 
 @login_required

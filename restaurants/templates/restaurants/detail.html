@@ -86,17 +86,58 @@
     {% endif %}
 
     <h3>Reviews</h3>
-    <ul>
-        {% for review in reviews %}
-            <li>
-                <strong>{{ review.user.username }}</strong> rated it {{ review.rating }} ⭐
-                <p>{{ review.comment }}</p>
-                <small><em>Posted on {{ review.created_at|date:"F d, Y" }}</em></small>
-            </li>
-        {% empty %}
-            <li>No reviews yet. Be the first to review!</li>
-        {% endfor %}
-    </ul>
+<ul>
+    {% for review in reviews %}
+        <li>
+            <strong>{{ review.user.username }}</strong>
+            {% if review.rating %}
+                rated it {{ review.rating }} ⭐
+            {% endif %}
+
+            <p>{{ review.comment }}</p>
+            <small><em>{{ review.created_at|date:"F d, Y" }}</em></small>
+
+            {% if user.is_authenticated and review.user == user %}
+                <br>
+                <a href="{% url 'restaurants:edit_review' review.id %}">
+                    <button>Edit</button>
+                </a>
+
+                <form action="{% url 'restaurants:delete_review' review.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Delete</button>
+                </form>
+            {% endif %}
+
+            {% if user.is_authenticated %}
+                <form action="{% url 'restaurants:add_reply' review.id %}" method="post" style="margin-top:10px;">
+                    {% csrf_token %}
+                    <textarea name="comment" rows="2" placeholder="Write a reply..." required></textarea>
+                    <br>
+                    <button type="submit">Reply</button>
+                </form>
+            {% endif %}
+
+            {% for reply in review.replies.all %}
+                <div style="margin-left:30px; border-left:2px solid #ccc; padding-left:10px; margin-top:10px;">
+                    <strong>{{ reply.user.username }}</strong>
+                    <p>{{ reply.comment }}</p>
+                    <small>{{ reply.created_at|date:"F d, Y" }}</small>
+
+                    {% if user.is_authenticated and reply.user == user %}
+                        <form action="{% url 'restaurants:delete_review' reply.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit">Delete</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </li>
+    {% empty %}
+        <li>No reviews yet. Be the first to review!</li>
+    {% endfor %}
+</ul>
+   
 
     <br>
     <a href="{% url 'restaurants:list' %}">Back to Restaurant List</a>
