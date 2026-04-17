@@ -26,4 +26,8 @@ urlpatterns = [
     path('restaurants/<int:id>/menu/add/', views.add_menu_item, name='add_menu_item'),
     path('menu/<int:id>/delete/', views.delete_menu_item, name='delete_menu_item'),
     path('menu/<int:id>/edit/', views.edit_menu_item, name='edit_menu_item'),
+    path("restaurants/<int:id>/review/", views.add_review, name="add_review"),
+    path("reviews/<int:id>/edit/", views.edit_review, name="edit_review"),
+    path("reviews/<int:id>/delete/", views.delete_review, name="delete_review"),
+    path("reviews/<int:id>/reply/", views.add_reply, name="add_reply"),
 ]
