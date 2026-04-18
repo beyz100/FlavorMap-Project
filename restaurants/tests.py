@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import Category, Favorite, Location, Restaurant, MenuItem, Review
+from .models import Category, Favorite, Location, OpeningHours, Restaurant, MenuItem, Review
 
 class MS1ViewsTest(TestCase):
     
@@ -169,3 +169,72 @@ class RestaurantOwnerAuthorizationTest(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertEqual(r.url, reverse("restaurants:list"))
         self.assertFalse(Restaurant.objects.filter(pk=rid).exists())
+
+
+class OpeningHoursCrudAuthorizationTest(TestCase):
+
+    def setUp(self):
+        self.owner = User.objects.create_user(username="owner_oh", password="pass12345")
+        self.other = User.objects.create_user(username="other_oh", password="pass12345")
+        self.category = Category.objects.create(name="Brunch")
+        self.location = Location.objects.create(name="South")
+        self.restaurant = Restaurant.objects.create(
+            name="Hours Place",
+            owner=self.owner,
+            category=self.category,
+            location=self.location,
+            description="Food",
+            address="10 Street",
+        )
+        self.oh = OpeningHours.objects.create(
+            restaurant=self.restaurant, day="weekdays", open_time="09:00", close_time="17:00"
+        )
+
+    def test_owner_can_add_opening_hours(self):
+        self.client.login(username="owner_oh", password="pass12345")
+        r = self.client.post(
+            reverse("restaurants:add_opening_hours", args=[self.restaurant.id]),
+            data={"day": "weekends", "open_time": "10:00", "close_time": "18:00"},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(
+            OpeningHours.objects.filter(restaurant=self.restaurant, day="weekends").exists()
+        )
+
+    def test_owner_can_open_edit_opening_hours_page(self):
+        self.client.login(username="owner_oh", password="pass12345")
+        r = self.client.get(reverse("restaurants:edit_opening_hours", args=[self.oh.id]))
+        self.assertEqual(r.status_code, 200)
+
+    def test_owner_can_edit_opening_hours(self):
+        self.client.login(username="owner_oh", password="pass12345")
+        r = self.client.post(
+            reverse("restaurants:edit_opening_hours", args=[self.oh.id]),
+            data={"day": "weekdays", "open_time": "08:30", "close_time": "16:30"},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.oh.refresh_from_db()
+        self.assertEqual(str(self.oh.open_time), "08:30:00")
+        self.assertEqual(str(self.oh.close_time), "16:30:00")
+
+    def test_non_owner_cannot_edit_opening_hours(self):
+        self.client.login(username="other_oh", password="pass12345")
+        r = self.client.get(
+            reverse("restaurants:edit_opening_hours", args=[self.oh.id]),
+            follow=False,
+        )
+        self.assertEqual(r.status_code, 302)
+
+    def test_owner_can_delete_opening_hours(self):
+        self.client.login(username="owner_oh", password="pass12345")
+        oid = self.oh.id
+        r = self.client.post(reverse("restaurants:delete_opening_hours", args=[oid]))
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(OpeningHours.objects.filter(pk=oid).exists())
+
+    def test_non_owner_cannot_delete_opening_hours(self):
+        self.client.login(username="other_oh", password="pass12345")
+        oid = self.oh.id
+        r = self.client.post(reverse("restaurants:delete_opening_hours", args=[oid]))
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(OpeningHours.objects.filter(pk=oid).exists())
