@@ -1,0 +1,16 @@
+{% extends 'restaurants/base.html' %}
+
+{% block content %}
+    <h2>Add Opening Hours</h2>
+    <p><strong>{{ restaurant.name }}</strong></p>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+
+    <p>
+        <a href="{% url 'restaurants:detail' restaurant.id %}">Back to restaurant</a>
+    </p>
+{% endblock %}

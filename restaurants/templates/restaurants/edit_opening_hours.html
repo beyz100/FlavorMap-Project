@@ -1,0 +1,17 @@
+{% extends 'restaurants/base.html' %}
+
+{% block content %}
+    <h2>Edit Opening Hours</h2>
+    <p><strong>{{ restaurant.name }}</strong> — {{ opening_hours.get_day_display }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+
+    <p>
+        <a href="{% url 'restaurants:detail' restaurant.id %}">Back to restaurant</a>
+    </p>
+{% endblock %}
+

@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.db.models import Avg
-from django.db import transaction, IntegrityError
+from django.db import transaction
 
-from .models import Category, Favorite, Location, Restaurant, Review, MenuItem
-from .forms import RestaurantForm, MenuItemForm, ReviewForm, ReplyForm
+from .forms import MenuItemForm, OpeningHoursForm, ReplyForm, RestaurantForm, ReviewForm
+from .models import Category, Favorite, Location, OpeningHours, Restaurant, Review, MenuItem
 
 
 def _user_owns_restaurant(user, restaurant):
@@ -67,6 +68,7 @@ def restaurant_detail(request, id):
     menu_items = restaurant.menu_items.all()
     reviews = restaurant.reviews.filter(parent__isnull=True).order_by("-created_at")
     review_form = ReviewForm()
+    opening_hours = restaurant.opening_hours.all()
 
     is_favorite = False
     can_manage_restaurant = False
@@ -79,6 +81,7 @@ def restaurant_detail(request, id):
     context = {
         "restaurant": restaurant,
         "menu_items": menu_items,
+        "opening_hours": opening_hours,
         "reviews": reviews,
         "is_favorite": is_favorite,
         "can_manage_restaurant": can_manage_restaurant,
@@ -318,5 +321,80 @@ def edit_menu_item(request, id):
         form = MenuItemForm(instance=menu_item)
 
     return render(request, "restaurants/edit_menu_item.html", {"form": form, "menu_item": menu_item})
-    # small changes
-    
+
+
+@login_required
+def add_opening_hours(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(request, "You can only edit restaurants you created.")
+        return redirect("restaurants:detail", id=restaurant.id)
+
+    if request.method == "POST":
+        form = OpeningHoursForm(request.POST)
+        if form.is_valid():
+            opening_hours = form.save(commit=False)
+            opening_hours.restaurant = restaurant
+            try:
+                opening_hours.save()
+            except IntegrityError:
+                form.add_error("day", "Opening hours for this day already exist. Edit the existing entry.")
+            else:
+                messages.success(request, "Opening hours added.")
+                return redirect("restaurants:detail", id=restaurant.id)
+    else:
+        form = OpeningHoursForm()
+
+    return render(
+        request,
+        "restaurants/add_opening_hours.html",
+        {
+            "form": form,
+            "restaurant": restaurant,
+        },
+    )
+
+
+@login_required
+def edit_opening_hours(request, id):
+    opening_hours = get_object_or_404(OpeningHours, id=id)
+    restaurant = opening_hours.restaurant
+
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(request, "You can only edit restaurants you created.")
+        return redirect("restaurants:detail", id=restaurant.id)
+
+    if request.method == "POST":
+        form = OpeningHoursForm(request.POST, instance=opening_hours)
+        if form.is_valid():
+            try:
+                form.save()
+            except IntegrityError:
+                form.add_error("day", "Opening hours for this day already exist.")
+            else:
+                messages.success(request, "Opening hours updated.")
+                return redirect("restaurants:detail", id=restaurant.id)
+    else:
+        form = OpeningHoursForm(instance=opening_hours)
+
+    return render(
+        request,
+        "restaurants/edit_opening_hours.html",
+        {"form": form, "restaurant": restaurant, "opening_hours": opening_hours},
+    )
+
+
+@login_required
+@require_POST
+def delete_opening_hours(request, id):
+    opening_hours = get_object_or_404(OpeningHours, id=id)
+    restaurant = opening_hours.restaurant
+
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(request, "You can only edit restaurants you created.")
+        return redirect("restaurants:detail", id=restaurant.id)
+
+    opening_hours.delete()
+    messages.success(request, "Opening hours removed.")
+    return redirect("restaurants:detail", id=restaurant.id)
