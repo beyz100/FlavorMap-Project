@@ -1,151 +1,477 @@
 {% extends 'restaurants/base.html' %}
 
 {% block content %}
-    <h2>{{ restaurant.name }}</h2>
-    {% if restaurant.photo %}
-        <div style="margin-bottom: 15px;">
-            <img src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}" style="max-width: 100%; height: auto; max-height: 400px; border-radius: 8px; object-fit: cover;">
-        </div>
-    {% endif %}
-    <p><strong>Category:</strong> {{ restaurant.category.name }}</p>
-    <p><strong>Location:</strong> {{ restaurant.location.name|default:"Not specified" }}</p>
-    <p><strong>Address:</strong> {{ restaurant.address }}</p>
-    <p><strong>Description:</strong> {{ restaurant.description }}</p>
-    <p><strong>Average Rating:</strong> {{ restaurant.average_rating }} ⭐</p>
-    <p><strong>Opening Hours:</strong></p>
-    <ul>
-        {% for hours in restaurant.opening_hours.all %}
-            <li>{{ hours.get_day_display }}: {{ hours.open_time|time:"H:i" }} - {{ hours.close_time|time:"H:i" }}</li>
-        {% empty %}
-            <li>Not specified</li>
-        {% endfor %}
-    </ul>
+<style>
+    .detail-wrapper {
+        max-width: 860px;
+        margin: 0 auto;
+    }
+    .detail-header {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .detail-photo {
+        width: 100%;
+        max-height: 380px;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+    .detail-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 0;
+    }
+    .detail-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        font-size: 0.9rem;
+        color: #555;
+    }
+    .badge {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    .section-card {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .section-card h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        border-bottom: 2px solid #ff6b35;
+        padding-bottom: 0.4rem;
+        display: inline-block;
+    }
+    /* Opening Hours */
+    .hours-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+    .hours-table td {
+        padding: 0.4rem 0.75rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .hours-table td:first-child {
+        font-weight: 600;
+        color: #333;
+        width: 120px;
+    }
+    /* Menu */
+    .menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .menu-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        background: #fafafa;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+    .menu-item-info strong {
+        font-size: 1rem;
+    }
+    .menu-item-info small {
+        display: block;
+        color: #777;
+        margin-top: 2px;
+    }
+    .menu-item-price {
+        font-weight: 700;
+        color: #ff6b35;
+        white-space: nowrap;
+        margin-left: 1rem;
+    }
+    .menu-item-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.4rem;
+    }
+    .btn-sm {
+        padding: 0.25rem 0.6rem;
+        font-size: 0.8rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #eee;
+        color: #333;
+        text-decoration: none;
+    }
+    .btn-sm:hover { background: #ddd; }
+    .btn-danger { background: #ffe0e0; color: #c00; }
+    .btn-danger:hover { background: #fcc; }
+    /* Favorite */
+    .btn-fav {
+        padding: 0.5rem 1.25rem;
+        border: 2px solid #ff6b35;
+        border-radius: 8px;
+        background: transparent;
+        color: #ff6b35;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: background 0.2s, color 0.2s;
+    }
+    .btn-fav:hover { background: #ff6b35; color: #fff; }
+    .btn-fav.active { background: #ff6b35; color: #fff; }
+    /* Reviews */
+    .review-card {
+        border: 1px solid #eee;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #fafafa;
+    }
+    .review-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .review-user {
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+    .review-rating {
+        color: #ff9900;
+        font-size: 0.9rem;
+    }
+    .review-date {
+        font-size: 0.78rem;
+        color: #999;
+        margin-left: auto;
+    }
+    .review-comment {
+        margin: 0.4rem 0;
+        font-size: 0.95rem;
+        color: #333;
+    }
+    .review-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    /* Replies */
+    .replies-section {
+        margin-top: 0.75rem;
+        padding-left: 1rem;
+        border-left: 3px solid #ffcc99;
+    }
+    .reply-card {
+        background: #fff;
+        border: 1px solid #f0e8d8;
+        border-radius: 8px;
+        padding: 0.6rem 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    .reply-header {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 0.3rem;
+    }
+    .reply-user {
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: #444;
+    }
+    .reply-date {
+        font-size: 0.75rem;
+        color: #aaa;
+        margin-left: auto;
+    }
+    .reply-comment {
+        font-size: 0.9rem;
+        color: #555;
+        margin: 0;
+    }
+    /* Reply form */
+    .reply-form {
+        margin-top: 0.75rem;
+    }
+    .reply-form textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 0.5rem;
+        font-size: 0.88rem;
+        resize: vertical;
+    }
+    .reply-form button {
+        margin-top: 0.4rem;
+        padding: 0.35rem 1rem;
+        background: #ff6b35;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+    .reply-form button:hover { background: #e05520; }
+    /* Review form */
+    .review-form label { font-weight: 600; font-size: 0.9rem; }
+    .review-form select,
+    .review-form textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+        margin-bottom: 0.75rem;
+    }
+    .btn-primary {
+        padding: 0.55rem 1.5rem;
+        background: #ff6b35;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+    .btn-primary:hover { background: #e05520; }
+    .manage-bar {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 1.25rem;
+    }
+    .btn-edit {
+        padding: 0.45rem 1.1rem;
+        background: #4a90e2;
+        color: #fff;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .btn-edit:hover { background: #357abd; }
+    .btn-delete {
+        padding: 0.45rem 1.1rem;
+        background: #e74c3c;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .btn-delete:hover { background: #c0392b; }
+    .back-link {
+        display: inline-block;
+        margin-top: 1rem;
+        color: #ff6b35;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+</style>
 
+<div class="detail-wrapper">
+
+    <!-- Restaurant Header -->
+    <div class="detail-header">
+        {% if restaurant.photo %}
+            <img class="detail-photo" src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}">
+        {% endif %}
+        <h1 class="detail-title">{{ restaurant.name }}</h1>
+        <div class="detail-meta">
+            <span class="badge">🍽️ {{ restaurant.category.name }}</span>
+            {% if restaurant.location %}
+                <span class="badge">📍 {{ restaurant.location.name }}</span>
+            {% endif %}
+            <span class="badge">📌 {{ restaurant.address }}</span>
+            {% if restaurant.phone %}
+                <span class="badge">📞 {{ restaurant.phone }}</span>
+            {% endif %}
+            <span class="badge">💰 {{ restaurant.get_price_range_display }}</span>
+            <span class="badge">⭐ {{ restaurant.average_rating }} / 5</span>
+        </div>
+        <p style="color:#555; margin:0;">{{ restaurant.description }}</p>
+    </div>
+
+    <!-- Owner Management Bar -->
     {% if can_manage_restaurant %}
-        <p>
-            <a href="{% url 'restaurants:edit_restaurant' restaurant.id %}">Edit restaurant</a>
-        </p>
+    <div class="manage-bar">
+        <a class="btn-edit" href="{% url 'restaurants:edit_restaurant' restaurant.id %}">✏️ Edit Restaurant</a>
         <form action="{% url 'restaurants:delete_restaurant' restaurant.id %}" method="post" style="display:inline;" onsubmit="return confirm('Delete this restaurant? This cannot be undone.');">
             {% csrf_token %}
-            <button type="submit">Delete restaurant</button>
+            <button type="submit" class="btn-delete">🗑️ Delete Restaurant</button>
         </form>
+        <a class="btn-edit" href="{% url 'restaurants:add_menu_item' restaurant.id %}">➕ Add Menu Item</a>
+    </div>
     {% endif %}
 
-    <hr>
-    
-    <h3>Menu Items</h3>
-    <ul>
-        {% for item in menu_items %}
-            <li><strong>{{ item.name }}</strong> - ₺{{ item.price }} <br> <small>{{ item.description }}</small></li>
-            {% if can_manage_restaurant %}
-            <a href="{% url 'restaurants:delete_menu_item' item.id %}">
-                <button>Delete</button>
-            </a>
-            <a href="{% url 'restaurants:edit_menu_item' item.id %}">
-                <button>Edit</button>
-            </a>
-            {% endif %}
-        {% empty %}
-            <li>No menu items added for this restaurant yet.</li>
-        {% endfor %}
-    </ul>
+    <!-- Opening Hours -->
+    <div class="section-card">
+        <h3>🕐 Opening Hours</h3>
+        {% with hours_list=restaurant.opening_hours.all %}
+        {% if hours_list %}
+            <table class="hours-table">
+                {% for hours in hours_list %}
+                <tr>
+                    <td>{{ hours.get_day_display }}</td>
+                    <td>{{ hours.open_time|time:"H:i" }} – {{ hours.close_time|time:"H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p style="color:#999; margin:0;">Opening hours not specified.</p>
+        {% endif %}
+        {% endwith %}
+    </div>
 
-    <hr>
+    <!-- Menu -->
+    <div class="section-card">
+        <h3>📋 Menu</h3>
+        {% if menu_items %}
+            <ul class="menu-list">
+                {% for item in menu_items %}
+                <li class="menu-item">
+                    <div class="menu-item-info">
+                        <strong>{{ item.name }}</strong>
+                        {% if item.description %}<small>{{ item.description }}</small>{% endif %}
+                        {% if can_manage_restaurant %}
+                        <div class="menu-item-actions">
+                            <a class="btn-sm" href="{% url 'restaurants:edit_menu_item' item.id %}">Edit</a>
+                            <a class="btn-sm btn-danger" href="{% url 'restaurants:delete_menu_item' item.id %}">Delete</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="menu-item-price">₺{{ item.price }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color:#999; margin:0;">No menu items added yet.</p>
+        {% endif %}
+    </div>
 
+    <!-- Favorites -->
     {% if user.is_authenticated %}
-        <h3>Save this place</h3>
-        <form action="{% url 'restaurants:toggle_favorite' restaurant.id %}" method="post" style="margin-bottom:1.5rem;">
+    <div class="section-card">
+        <h3>🔖 Save This Place</h3>
+        <form action="{% url 'restaurants:toggle_favorite' restaurant.id %}" method="post">
             {% csrf_token %}
             {% if is_favorite %}
-                <button type="submit">Remove from favorites</button>
+                <button type="submit" class="btn-fav active">❤️ Remove from Favorites</button>
             {% else %}
-                <button type="submit">Save to favorites</button>
+                <button type="submit" class="btn-fav">🤍 Save to Favorites</button>
             {% endif %}
         </form>
-
-        <h3>Write a review</h3>
-        <form action="{% url 'restaurants:add_review' restaurant.id %}" method="post" style="margin-bottom:1.5rem;">
-            {% csrf_token %}
-            <p>
-                <label for="id_rating">Rating (1–5)</label><br>
-                <select name="rating" id="id_rating" required>
-                    <option value="" disabled selected>Choose…</option>
-                    {% for i in "12345" %}
-                        <option value="{{ i }}">{{ i }} stars</option>
-                    {% endfor %}
-                </select>
-            </p>
-            <p>
-                <label for="id_comment">Comment</label><br>
-                <textarea name="comment" id="id_comment" rows="4" cols="50" required></textarea>
-            </p>
-            <button type="submit">Submit review</button>
-        </form>
-    {% else %}
-        <p><a href="{% url 'login' %}?next={{ request.path }}">Log in</a> to save favorites or post a review.</p>
+    </div>
     {% endif %}
 
-    <h3>Reviews</h3>
-<ul>
-    {% for review in reviews %}
-        <li>
-            <strong>{{ review.user.username }}</strong>
-            {% if review.rating %}
-                rated it {{ review.rating }} ⭐
-            {% endif %}
+    <!-- Write a Review -->
+    {% if user.is_authenticated %}
+    <div class="section-card">
+        <h3>✍️ Write a Review</h3>
+        <form class="review-form" action="{% url 'restaurants:add_review' restaurant.id %}" method="post">
+            {% csrf_token %}
+            <label for="id_rating">Rating (1–5)</label>
+            <select name="rating" id="id_rating" required>
+                <option value="" disabled selected>Choose…</option>
+                {% for i in "12345" %}
+                    <option value="{{ i }}">{{ i }} ⭐</option>
+                {% endfor %}
+            </select>
 
-            <p>{{ review.comment }}</p>
-            <small><em>{{ review.created_at|date:"F d, Y" }}</em></small>
+            <label for="id_comment">Comment</label>
+            <textarea name="comment" id="id_comment" rows="4" required placeholder="Share your experience..."></textarea>
+
+            <button type="submit" class="btn-primary">Submit Review</button>
+        </form>
+    </div>
+    {% else %}
+        <p><a href="{% url 'login' %}?next={{ request.path }}" style="color:#ff6b35; font-weight:600;">Log in</a> to save favorites or post a review.</p>
+    {% endif %}
+
+    <!-- Reviews -->
+    <div class="section-card">
+        <h3>💬 Reviews</h3>
+        {% for review in reviews %}
+        <div class="review-card">
+            <div class="review-header">
+                <span class="review-user">{{ review.user.username }}</span>
+                {% if review.rating %}
+                    <span class="review-rating">
+                        {% for i in "12345" %}{% if forloop.counter <= review.rating %}⭐{% endif %}{% endfor %}
+                        ({{ review.rating }}/5)
+                    </span>
+                {% endif %}
+                <span class="review-date">{{ review.created_at|date:"F d, Y" }}</span>
+            </div>
+            <p class="review-comment">{{ review.comment }}</p>
 
             {% if user.is_authenticated and review.user == user %}
-                <br>
-                <a href="{% url 'restaurants:edit_review' review.id %}">
-                    <button>Edit</button>
-                </a>
-
+            <div class="review-actions">
+                <a class="btn-sm" href="{% url 'restaurants:edit_review' review.id %}">Edit</a>
                 <form action="{% url 'restaurants:delete_review' review.id %}" method="post" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit">Delete</button>
+                    <button type="submit" class="btn-sm btn-danger">Delete</button>
                 </form>
+            </div>
             {% endif %}
 
-            {% if user.is_authenticated %}
-                <form action="{% url 'restaurants:add_reply' review.id %}" method="post" style="margin-top:10px;">
-                    {% csrf_token %}
-                    <textarea name="comment" rows="2" placeholder="Write a reply..." required></textarea>
-                    <br>
-                    <button type="submit">Reply</button>
-                </form>
-            {% endif %}
-
-            {% for reply in review.replies.all %}
-                <div style="margin-left:30px; border-left:2px solid #ccc; padding-left:10px; margin-top:10px;">
-                    <strong>{{ reply.user.username }}</strong>
-                    <p>{{ reply.comment }}</p>
-                    <small>{{ reply.created_at|date:"F d, Y" }}</small>
-
+            <!-- Replies List -->
+            {% if review.replies.all %}
+            <div class="replies-section">
+                {% for reply in review.replies.all %}
+                <div class="reply-card">
+                    <div class="reply-header">
+                        <span class="reply-user">↩ {{ reply.user.username }}</span>
+                        <span class="reply-date">{{ reply.created_at|date:"F d, Y" }}</span>
+                    </div>
+                    <p class="reply-comment">{{ reply.comment }}</p>
                     {% if user.is_authenticated and reply.user == user %}
-                        <form action="{% url 'restaurants:delete_review' reply.id %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit">Delete</button>
-                        </form>
+                    <form action="{% url 'restaurants:delete_review' reply.id %}" method="post" style="margin-top:0.3rem;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-sm btn-danger">Delete Reply</button>
+                    </form>
                     {% endif %}
                 </div>
-            {% endfor %}
-        </li>
-    {% empty %}
-        <li>No reviews yet. Be the first to review!</li>
-    {% endfor %}
-</ul>
-   
+                {% endfor %}
+            </div>
+            {% endif %}
 
-    <br>
-    <a href="{% url 'restaurants:list' %}">Back to Restaurant List</a>
-    
-    {% if can_manage_restaurant %}
-    <a href="{% url 'restaurants:add_menu_item' restaurant.id %}">
-        <button>Add Menu Item</button>
-    </a>
-    {% endif %}
-    {% endblock %}
+            <!-- Reply Form -->
+            {% if user.is_authenticated %}
+            <div class="reply-form">
+                <form action="{% url 'restaurants:add_reply' review.id %}" method="post">
+                    {% csrf_token %}
+                    <textarea name="comment" rows="2" placeholder="Write a reply..." required></textarea>
+                    <button type="submit">Reply</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+            <p style="color:#999;">No reviews yet. Be the first to review!</p>
+        {% endfor %}
+    </div>
 
+    <a class="back-link" href="{% url 'restaurants:list' %}">← Back to Restaurant List</a>
+
+</div>
+{% endblock %}

@@ -14,8 +14,19 @@ def _user_owns_restaurant(user, restaurant):
 
 
 def home(request):
-    featured_restaurants = Restaurant.objects.select_related('category').order_by("-id")[:3]
-    return render(request, "restaurants/home.html", {"restaurants": featured_restaurants})
+    top_rated = (
+        Restaurant.objects.select_related('category', 'location')
+        .annotate(avg_rating=Avg('reviews__rating'))
+        .order_by('-avg_rating')[:3]
+    )
+    newest = (
+        Restaurant.objects.select_related('category', 'location')
+        .order_by('-id')[:3]
+    )
+    return render(request, "restaurants/home.html", {
+        "top_rated": top_rated,
+        "newest": newest,
+    })
 
 
 def restaurant_list(request):
