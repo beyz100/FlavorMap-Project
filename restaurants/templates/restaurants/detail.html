@@ -326,20 +326,33 @@
     <!-- Opening Hours -->
     <div class="section-card">
         <h3>🕐 Opening Hours</h3>
-        {% with hours_list=restaurant.opening_hours.all %}
-        {% if hours_list %}
+        {% if opening_hours %}
             <table class="hours-table">
-                {% for hours in hours_list %}
+                {% for hours in opening_hours %}
                 <tr>
                     <td>{{ hours.get_day_display }}</td>
                     <td>{{ hours.open_time|time:"H:i" }} – {{ hours.close_time|time:"H:i" }}</td>
+                    {% if can_manage_restaurant %}
+                        <td style="text-align:right;">
+                            <a class="btn-sm" href="{% url 'restaurants:edit_opening_hours' hours.id %}">Edit</a>
+                            <form action="{% url 'restaurants:delete_opening_hours' hours.id %}" method="post" style="display:inline;" onsubmit="return confirm('Delete these opening hours?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </table>
         {% else %}
             <p style="color:#999; margin:0;">Opening hours not specified.</p>
         {% endif %}
-        {% endwith %}
+
+        {% if can_manage_restaurant %}
+            <div style="margin-top: 0.85rem;">
+                <a class="btn-edit" href="{% url 'restaurants:add_opening_hours' restaurant.id %}">➕ Add Opening Hours</a>
+            </div>
+        {% endif %}
     </div>
 
     <!-- Menu -->
@@ -435,7 +448,7 @@
             {% endif %}
 
             <!-- Replies List -->
-            {% if review.replies.all %}
+            {% if review.replies.count %}
             <div class="replies-section">
                 {% for reply in review.replies.all %}
                 <div class="reply-card">
