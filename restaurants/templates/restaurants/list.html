@@ -30,7 +30,12 @@
 
 <ul>
     {% for restaurant in restaurants %}
-        <li>
+        <li style="margin-bottom: 15px;">
+            {% if restaurant.photo %}
+                <div style="margin-bottom: 5px;">
+                    <img src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}" style="max-width: 150px; height: 100px; border-radius: 8px; object-fit: cover;">
+                </div>
+            {% endif %}
             <strong>{{ restaurant.name }}</strong> -
             Category: {{ restaurant.category.name }} |
             Location: {{ restaurant.location.name|default:"Not specified" }} |

@@ -59,10 +59,19 @@ class MenuItem(models.Model):
 class Review(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)], null=True, blank=True)
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['restaurant', 'user'],
+                condition=models.Q(parent__isnull=True),
+                name='unique_main_review_per_user_per_restaurant'
+            )
+        ]
 
     def __str__(self):
         return f"{self.restaurant.name} - {self.user.username}"
@@ -89,11 +98,11 @@ class Favorite(models.Model):
 
 class OpeningHours(models.Model):
     DAY_CHOICES = [
-        (1, 'Monday'), (2, 'Tuesday'), (3, 'Wednesday'),
-        (4, 'Thursday'), (5, 'Friday'), (6, 'Saturday'), (7, 'Sunday'),
+        ('weekdays', 'Weekdays'),
+        ('weekends', 'Weekends'),
     ]
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='opening_hours')
-    day = models.IntegerField(choices=DAY_CHOICES)
+    day = models.CharField(max_length=20, choices=DAY_CHOICES)
     open_time = models.TimeField()
     close_time = models.TimeField()
 
