@@ -123,19 +123,25 @@ def add_review(request, id):
         messages.error(request, "Invalid input.")
         return redirect("restaurants:detail", id=id)
 
-    if Review.objects.filter(
-        restaurant=restaurant,
-        user=request.user,
-        parent__isnull=True
-    ).exists():
-        messages.error(request, "You have already reviewed this restaurant.")
-        return redirect("restaurants:detail", id=id)
+    try:
+        with transaction.atomic():
+            if Review.objects.filter(
+                restaurant=restaurant,
+                user=request.user,
+                parent__isnull=True
+            ).exists():
+                messages.error(request, "You have already reviewed this restaurant.")
+                return redirect("restaurants:detail", id=id)
 
-    review = form.save(commit=False)
-    review.restaurant = restaurant
-    review.user = request.user
-    review.parent = None
-    review.save()
+            review = form.save(commit=False)
+            review.restaurant = restaurant
+            review.user = request.user
+            review.parent = None
+            review.save()
+
+    except IntegrityError:
+        messages.error(request, "A database error occurred while saving your review.")
+        return redirect("restaurants:detail", id=id)
 
     messages.success(request, "Review added.")
     return redirect("restaurants:detail", id=id)
@@ -188,12 +194,18 @@ def add_reply(request, id):
         messages.error(request, "Reply cannot be empty.")
         return redirect("restaurants:detail", id=parent_review.restaurant.id)
 
-    reply = form.save(commit=False)
-    reply.restaurant = parent_review.restaurant
-    reply.user = request.user
-    reply.parent = parent_review
-    reply.rating = None
-    reply.save()
+    try:
+        with transaction.atomic():
+            reply = form.save(commit=False)
+            reply.restaurant = parent_review.restaurant
+            reply.user = request.user
+            reply.parent = parent_review
+            reply.rating = None
+            reply.save()
+
+    except IntegrityError:
+        messages.error(request, "A database error occurred while saving your reply.")
+        return redirect("restaurants:detail", id=parent_review.restaurant.id)
 
     messages.success(request, "Reply added.")
     return redirect("restaurants:detail", id=parent_review.restaurant.id)
