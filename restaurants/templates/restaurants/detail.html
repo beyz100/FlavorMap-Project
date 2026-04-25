@@ -286,6 +286,25 @@
         text-decoration: none;
     }
     .back-link:hover { text-decoration: underline; }
+    /* Star rating */
+    .star-rating {
+        display: inline-flex;
+        gap: 0.25rem;
+        align-items: center;
+        margin: 0.25rem 0 0.75rem 0;
+    }
+    .star-btn {
+        border: none;
+        background: none;
+        font-size: 30px;
+        cursor: pointer;
+        color: #b5b5b5;
+        padding: 0;
+        line-height: 1;
+    }
+    .star-btn.active {
+        color: #ffb400;
+    }
 </style>
 
 <div class="detail-wrapper">
@@ -402,13 +421,17 @@
         <h3>✍️ Write a Review</h3>
         <form class="review-form" action="{% url 'restaurants:add_review' restaurant.id %}" method="post">
             {% csrf_token %}
-            <label for="id_rating">Rating (1–5)</label>
-            <select name="rating" id="id_rating" required>
-                <option value="" disabled selected>Choose…</option>
-                {% for i in "12345" %}
-                    <option value="{{ i }}">{{ i }} ⭐</option>
-                {% endfor %}
-            </select>
+            <label>Rating</label>
+            <div class="star-rating">
+                <button type="button" class="star-btn" data-value="1" aria-label="Rate 1 out of 5">★</button>
+                <button type="button" class="star-btn" data-value="2" aria-label="Rate 2 out of 5">★</button>
+                <button type="button" class="star-btn" data-value="3" aria-label="Rate 3 out of 5">★</button>
+                <button type="button" class="star-btn" data-value="4" aria-label="Rate 4 out of 5">★</button>
+                <button type="button" class="star-btn" data-value="5" aria-label="Rate 5 out of 5">★</button>
+              </div>
+              
+              <input type="hidden" name="rating" id="rating-input" required>
+            
 
             <label for="id_comment">Comment</label>
             <textarea name="comment" id="id_comment" rows="4" required placeholder="Share your experience..."></textarea>
@@ -487,4 +510,27 @@
     <a class="back-link" href="{% url 'restaurants:list' %}">← Back to Restaurant List</a>
 
 </div>
+<script>
+  (function () {
+    const input = document.getElementById("rating-input");
+    const stars = document.querySelectorAll(".star-btn");
+
+    if (!input || stars.length === 0) return;
+
+    function paint(value) {
+      stars.forEach((star, idx) => {
+        star.classList.toggle("active", idx < value);
+      });
+    }
+
+    stars.forEach((star) => {
+      star.addEventListener("click", () => {
+        const value = Number(star.dataset.value || 0);
+        input.value = String(value);
+        paint(value);
+      });
+    });
+  })();
+</script>
+
 {% endblock %}
