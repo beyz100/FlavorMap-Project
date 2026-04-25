@@ -7,6 +7,7 @@ from .models import (
     Restaurant,
     MenuItem,
     Review,
+    RestaurantPhoto,
 )
 
 @admin.register(Category)
@@ -19,11 +20,16 @@ class LocationAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
+class RestaurantPhotoInline(admin.TabularInline):
+    model = RestaurantPhoto
+    extra = 1
+
 @admin.register(Restaurant)
 class RestaurantAdmin(admin.ModelAdmin):
     list_display = ('name', 'owner', 'category', 'location', 'average_rating')
     list_filter = ('category', 'location')
     search_fields = ('name', 'description')
+    inlines = [RestaurantPhotoInline]
 
 @admin.register(MenuItem)
 class MenuItemAdmin(admin.ModelAdmin):

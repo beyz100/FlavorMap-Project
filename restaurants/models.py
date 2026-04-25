@@ -112,3 +112,13 @@ class OpeningHours(models.Model):
 
     def __str__(self):
         return f"{self.restaurant.name} - {self.get_day_display()}"
+
+class RestaurantPhoto(models.Model):
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='gallery_photos')
+    image = models.ImageField(upload_to='restaurant_gallery/')
+    caption = models.CharField(max_length=255, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Photo for {self.restaurant.name}"
+

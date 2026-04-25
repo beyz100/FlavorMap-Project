@@ -6,8 +6,8 @@ from django.views.decorators.http import require_POST
 from django.db.models import Avg
 from django.db import transaction
 
-from .forms import MenuItemForm, OpeningHoursForm, ReplyForm, RestaurantForm, ReviewForm
-from .models import Category, Favorite, Location, OpeningHours, Restaurant, Review, MenuItem
+from .forms import MenuItemForm, OpeningHoursForm, ReplyForm, RestaurantForm, ReviewForm, RestaurantPhotoForm
+from .models import Category, Favorite, Location, OpeningHours, Restaurant, Review, MenuItem, RestaurantPhoto
 
 
 def _user_owns_restaurant(user, restaurant):
@@ -69,6 +69,7 @@ def restaurant_detail(request, id):
     reviews = restaurant.reviews.filter(parent__isnull=True).order_by("-created_at")
     review_form = ReviewForm()
     opening_hours = restaurant.opening_hours.all()
+    gallery_photos = restaurant.gallery_photos.all()
 
     is_favorite = False
     can_manage_restaurant = False
@@ -82,6 +83,7 @@ def restaurant_detail(request, id):
         "restaurant": restaurant,
         "menu_items": menu_items,
         "opening_hours": opening_hours,
+        "gallery_photos": gallery_photos,
         "reviews": reviews,
         "is_favorite": is_favorite,
         "can_manage_restaurant": can_manage_restaurant,
@@ -409,4 +411,39 @@ def delete_opening_hours(request, id):
 
     opening_hours.delete()
     messages.success(request, "Opening hours removed.")
+    return redirect("restaurants:detail", id=restaurant.id)
+
+@login_required
+def add_photo(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(request, "You can only add photos to restaurants you created.")
+        return redirect("restaurants:detail", id=restaurant.id)
+
+    if request.method == "POST":
+        form = RestaurantPhotoForm(request.POST, request.FILES)
+        if form.is_valid():
+            photo = form.save(commit=False)
+            photo.restaurant = restaurant
+            photo.save()
+            messages.success(request, "Photo added to gallery.")
+            return redirect("restaurants:detail", id=restaurant.id)
+    else:
+        form = RestaurantPhotoForm()
+
+    return render(request, "restaurants/add_photo.html", {"form": form, "restaurant": restaurant})
+
+@login_required
+@require_POST
+def delete_photo(request, id):
+    photo = get_object_or_404(RestaurantPhoto, id=id)
+    restaurant = photo.restaurant
+
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(request, "You can only delete photos of restaurants you created.")
+        return redirect("restaurants:detail", id=restaurant.id)
+
+    photo.delete()
+    messages.success(request, "Photo removed from gallery.")
     return redirect("restaurants:detail", id=restaurant.id)

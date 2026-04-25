@@ -374,6 +374,34 @@
         {% endif %}
     </div>
 
+    <!-- Photo Gallery -->
+    <div class="section-card">
+        <h3>📸 Photo Gallery</h3>
+        {% if gallery_photos %}
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                {% for photo in gallery_photos %}
+                    <div style="position: relative;">
+                        <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
+                        {% if can_manage_restaurant %}
+                            <form action="{% url 'restaurants:delete_photo' photo.id %}" method="post" style="position: absolute; top: 5px; right: 5px;" onsubmit="return confirm('Delete this photo?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-sm btn-danger" style="padding: 2px 6px;">X</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color:#999; margin:0;">No photos in the gallery yet.</p>
+        {% endif %}
+
+        {% if can_manage_restaurant %}
+            <div style="margin-top: 0.85rem;">
+                <a class="btn-edit" href="{% url 'restaurants:add_photo' restaurant.id %}">➕ Add Photo</a>
+            </div>
+        {% endif %}
+    </div>
+
     <!-- Menu -->
     <div class="section-card">
         <h3>📋 Menu</h3>

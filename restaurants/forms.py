@@ -1,5 +1,5 @@
 from django import forms
-from .models import OpeningHours, Restaurant, MenuItem, Review
+from .models import OpeningHours, Restaurant, MenuItem, Review, RestaurantPhoto
 
 class RestaurantForm(forms.ModelForm):
     class Meta:
@@ -26,3 +26,8 @@ class OpeningHoursForm(forms.ModelForm):
     class Meta:
         model = OpeningHours
         fields = ["day", "open_time", "close_time"]
+
+class RestaurantPhotoForm(forms.ModelForm):
+    class Meta:
+        model = RestaurantPhoto
+        fields = ['image', 'caption']
