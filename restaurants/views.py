@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.db import transaction
 
 from .forms import MenuItemForm, OpeningHoursForm, ReplyForm, RestaurantForm, ReviewForm, RestaurantPhotoForm
@@ -40,8 +40,14 @@ def restaurant_list(request):
         annotated_avg_rating=Avg('reviews__rating')
     )
 
+    sort = request.GET.get("sort")
+
     if query:
-        restaurants = restaurants.filter(name__icontains=query)
+        restaurants = restaurants.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query) |
+            Q(location__name__icontains=query)
+        )
 
     if category:
         restaurants = restaurants.filter(category_id=category)
@@ -51,6 +57,9 @@ def restaurant_list(request):
 
     if price:
         restaurants = restaurants.filter(price_range=price)
+
+    if sort == "rating":
+        restaurants = restaurants.order_by("-annotated_avg_rating")
 
     categories = Category.objects.all()
     locations = Location.objects.all()

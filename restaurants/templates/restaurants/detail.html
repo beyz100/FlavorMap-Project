@@ -411,6 +411,9 @@
                 <li class="menu-item">
                     <div class="menu-item-info">
                         <strong>{{ item.name }}</strong>
+                        {% if item.category %}
+                            <span class="badge" style="font-size: 0.75rem; background: #e0f2fe; border-color: #bae6fd; color: #0284c7; margin-left: 5px;">{{ item.category }}</span>
+                        {% endif %}
                         {% if item.description %}<small>{{ item.description }}</small>{% endif %}
                         {% if can_manage_restaurant %}
                         <div class="menu-item-actions">

@@ -25,7 +25,13 @@
         <option value="2" {% if request.GET.price == "2" %}selected{% endif %}>₺₺</option>
         <option value="3" {% if request.GET.price == "3" %}selected{% endif %}>₺₺₺</option>
     </select>
-    <button type="submit">Filter</button>
+    
+    <select name="sort">
+        <option value="">Sort by: Default</option>
+        <option value="rating" {% if request.GET.sort == "rating" %}selected{% endif %}>Sort by: Rating (High to Low)</option>
+    </select>
+
+    <button type="submit">Filter & Sort</button>
 </form>
 
 <ul>
