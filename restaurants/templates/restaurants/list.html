@@ -106,7 +106,7 @@
   {% if user.is_authenticated %}
     <div style="text-align:center; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
       <p style="color:var(--text-light); font-size:0.9rem; margin-bottom:0.75rem;">Can't find your favourite spot?</p>
-      <a href="{% url 'restaurants:create' %}" class="btn btn-primary" id="add-restaurant-btn">+ Add a Restaurant</a>
+      <a href="{% url 'restaurants:create_restaurant' %}" class="btn btn-primary" id="add-restaurant-btn">+ Add a Restaurant</a>
     </div>
   {% endif %}
 
