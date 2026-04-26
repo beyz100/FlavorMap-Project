@@ -30,6 +30,7 @@ class RestaurantAdmin(admin.ModelAdmin):
     list_filter = ('category', 'location')
     search_fields = ('name', 'description')
     inlines = [RestaurantPhotoInline]
+    list_display = ("name", "location", "price_range", "google_maps_embed_url")
 
 @admin.register(MenuItem)
 class MenuItemAdmin(admin.ModelAdmin):
