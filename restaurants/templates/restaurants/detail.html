@@ -1,582 +1,319 @@
 {% extends 'restaurants/base.html' %}
+{% block title %}{{ restaurant.name }} – FlavorMap{% endblock %}
+{% block meta_description %}View details, menu, reviews, and opening hours for {{ restaurant.name }} on FlavorMap.{% endblock %}
 
 {% block content %}
-<style>
-    .detail-wrapper {
-        max-width: 860px;
-        margin: 0 auto;
-    }
-    .detail-header {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    .detail-photo {
-        width: 100%;
-        max-height: 380px;
-        object-fit: cover;
-        border-radius: 12px;
-    }
-    .detail-title {
-        font-size: 2rem;
-        font-weight: 800;
-        margin: 0;
-    }
-    .detail-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        font-size: 0.9rem;
-        color: #555;
-    }
-    .badge {
-        background: #f5f5f5;
-        border: 1px solid #ddd;
-        border-radius: 20px;
-        padding: 0.25rem 0.75rem;
-        font-size: 0.85rem;
-    }
-    .section-card {
-        background: #fff;
-        border: 1px solid #e8e8e8;
-        border-radius: 10px;
-        padding: 1.25rem 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    }
-    .section-card h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1.15rem;
-        font-weight: 700;
-        border-bottom: 2px solid #ff6b35;
-        padding-bottom: 0.4rem;
-        display: inline-block;
-    }
-    /* Opening Hours */
-    .hours-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9rem;
-    }
-    .hours-table td {
-        padding: 0.4rem 0.75rem;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .hours-table td:first-child {
-        font-weight: 600;
-        color: #333;
-        width: 120px;
-    }
-    /* Menu */
-    .menu-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    .menu-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        background: #fafafa;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-    }
-    .menu-item-info strong {
-        font-size: 1rem;
-    }
-    .menu-item-info small {
-        display: block;
-        color: #777;
-        margin-top: 2px;
-    }
-    .menu-item-price {
-        font-weight: 700;
-        color: #ff6b35;
-        white-space: nowrap;
-        margin-left: 1rem;
-    }
-    .menu-item-actions {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 0.4rem;
-    }
-    .btn-sm {
-        padding: 0.25rem 0.6rem;
-        font-size: 0.8rem;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        background: #eee;
-        color: #333;
-        text-decoration: none;
-    }
-    .btn-sm:hover { background: #ddd; }
-    .btn-danger { background: #ffe0e0; color: #c00; }
-    .btn-danger:hover { background: #fcc; }
-    /* Favorite */
-    .btn-fav {
-        padding: 0.5rem 1.25rem;
-        border: 2px solid #ff6b35;
-        border-radius: 8px;
-        background: transparent;
-        color: #ff6b35;
-        font-weight: 600;
-        cursor: pointer;
-        font-size: 0.95rem;
-        transition: background 0.2s, color 0.2s;
-    }
-    .btn-fav:hover { background: #ff6b35; color: #fff; }
-    .btn-fav.active { background: #ff6b35; color: #fff; }
-    /* Reviews */
-    .review-card {
-        border: 1px solid #eee;
-        border-radius: 10px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        background: #fafafa;
-    }
-    .review-header {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    .review-user {
-        font-weight: 700;
-        font-size: 0.95rem;
-    }
-    .review-rating {
-        color: #ff9900;
-        font-size: 0.9rem;
-    }
-    .review-date {
-        font-size: 0.78rem;
-        color: #999;
-        margin-left: auto;
-    }
-    .review-comment {
-        margin: 0.4rem 0;
-        font-size: 0.95rem;
-        color: #333;
-    }
-    .review-actions {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
-    }
-    /* Replies */
-    .replies-section {
-        margin-top: 0.75rem;
-        padding-left: 1rem;
-        border-left: 3px solid #ffcc99;
-    }
-    .reply-card {
-        background: #fff;
-        border: 1px solid #f0e8d8;
-        border-radius: 8px;
-        padding: 0.6rem 0.9rem;
-        margin-bottom: 0.5rem;
-    }
-    .reply-header {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        margin-bottom: 0.3rem;
-    }
-    .reply-user {
-        font-weight: 600;
-        font-size: 0.88rem;
-        color: #444;
-    }
-    .reply-date {
-        font-size: 0.75rem;
-        color: #aaa;
-        margin-left: auto;
-    }
-    .reply-comment {
-        font-size: 0.9rem;
-        color: #555;
-        margin: 0;
-    }
-    /* Reply form */
-    .reply-form {
-        margin-top: 0.75rem;
-    }
-    .reply-form textarea {
-        width: 100%;
-        box-sizing: border-box;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 0.5rem;
-        font-size: 0.88rem;
-        resize: vertical;
-    }
-    .reply-form button {
-        margin-top: 0.4rem;
-        padding: 0.35rem 1rem;
-        background: #ff6b35;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 0.85rem;
-    }
-    .reply-form button:hover { background: #e05520; }
-    /* Review form */
-    .review-form label { font-weight: 600; font-size: 0.9rem; }
-    .review-form select,
-    .review-form textarea {
-        width: 100%;
-        box-sizing: border-box;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.9rem;
-        margin-top: 0.25rem;
-        margin-bottom: 0.75rem;
-    }
-    .btn-primary {
-        padding: 0.55rem 1.5rem;
-        background: #ff6b35;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        cursor: pointer;
-    }
-    .btn-primary:hover { background: #e05520; }
-    .manage-bar {
-        display: flex;
-        gap: 0.75rem;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-bottom: 1.25rem;
-    }
-    .btn-edit {
-        padding: 0.45rem 1.1rem;
-        background: #4a90e2;
-        color: #fff;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    .btn-edit:hover { background: #357abd; }
-    .btn-delete {
-        padding: 0.45rem 1.1rem;
-        background: #e74c3c;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    .btn-delete:hover { background: #c0392b; }
-    .back-link {
-        display: inline-block;
-        margin-top: 1rem;
-        color: #ff6b35;
-        font-weight: 600;
-        text-decoration: none;
-    }
-    .back-link:hover { text-decoration: underline; }
-    /* Star rating */
-    .star-rating {
-        display: inline-flex;
-        gap: 0.25rem;
-        align-items: center;
-        margin: 0.25rem 0 0.75rem 0;
-    }
-    .star-btn {
-        border: none;
-        background: none;
-        font-size: 30px;
-        cursor: pointer;
-        color: #b5b5b5;
-        padding: 0;
-        line-height: 1;
-    }
-    .star-btn.active {
-        color: #ffb400;
-    }
-</style>
+<div class="page-container page-container--narrow">
 
-<div class="detail-wrapper">
+  <!-- Photo -->
+  {% if restaurant.photo %}
+    <img class="detail-photo" src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}">
+  {% endif %}
 
-    <!-- Restaurant Header -->
-    <div class="detail-header">
-        {% if restaurant.photo %}
-            <img class="detail-photo" src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}">
-        {% endif %}
-        <h1 class="detail-title">{{ restaurant.name }}</h1>
-        <div class="detail-meta">
-            <span class="badge">🍽️ {{ restaurant.category.name }}</span>
-            {% if restaurant.location %}
-                <span class="badge">📍 {{ restaurant.location.name }}</span>
-            {% endif %}
-            <span class="badge">📌 {{ restaurant.address }}</span>
-            {% if restaurant.phone %}
-                <span class="badge">📞 {{ restaurant.phone }}</span>
-            {% endif %}
-            <span class="badge">💰 {{ restaurant.get_price_range_display }}</span>
-            <span class="badge">⭐ {{ restaurant.average_rating }} / 5</span>
-        </div>
-        <p style="color:#555; margin:0;">{{ restaurant.description }}</p>
-        {% if restaurant.google_maps_embed_url %}
-<div class="section-card">
-    <h3>Location</h3>
-    <div style="width:100%; height:350px;">
-        <iframe
-            src="{{ restaurant.google_maps_embed_url }}"
-            width="100%"
-            height="100%"
-            style="border:0; border-radius:10px;"
-            allowfullscreen
-            loading="lazy">
-        </iframe>
-    </div>
-</div>
-{% endif %}
-    </div>
-
-    <!-- Owner Management Bar -->
-    {% if can_manage_restaurant %}
-    <div class="manage-bar">
-        <a class="btn-edit" href="{% url 'restaurants:edit_restaurant' restaurant.id %}">✏️ Edit Restaurant</a>
-        <form action="{% url 'restaurants:delete_restaurant' restaurant.id %}" method="post" style="display:inline;" onsubmit="return confirm('Delete this restaurant? This cannot be undone.');">
-            {% csrf_token %}
-            <button type="submit" class="btn-delete">🗑️ Delete Restaurant</button>
-        </form>
-        <a class="btn-edit" href="{% url 'restaurants:add_menu_item' restaurant.id %}">➕ Add Menu Item</a>
-    </div>
+  <!-- Title & Meta -->
+  <h1 class="detail-title">{{ restaurant.name }}</h1>
+  <div class="detail-meta">
+    <span class="badge">🍽️ {{ restaurant.category.name }}</span>
+    {% if restaurant.location %}
+      <span class="badge">📍 {{ restaurant.location.name }}</span>
     {% endif %}
-
-    <!-- Opening Hours -->
-    <div class="section-card">
-        <h3>🕐 Opening Hours</h3>
-        {% if opening_hours %}
-            <table class="hours-table">
-                {% for hours in opening_hours %}
-                <tr>
-                    <td>{{ hours.get_day_display }}</td>
-                    <td>{{ hours.open_time|time:"H:i" }} – {{ hours.close_time|time:"H:i" }}</td>
-                    {% if can_manage_restaurant %}
-                        <td style="text-align:right;">
-                            <a class="btn-sm" href="{% url 'restaurants:edit_opening_hours' hours.id %}">Edit</a>
-                            <form action="{% url 'restaurants:delete_opening_hours' hours.id %}" method="post" style="display:inline;" onsubmit="return confirm('Delete these opening hours?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-            </table>
-        {% else %}
-            <p style="color:#999; margin:0;">Opening hours not specified.</p>
-        {% endif %}
-
-        {% if can_manage_restaurant %}
-            <div style="margin-top: 0.85rem;">
-                <a class="btn-edit" href="{% url 'restaurants:add_opening_hours' restaurant.id %}">➕ Add Opening Hours</a>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Photo Gallery -->
-    <div class="section-card">
-        <h3>📸 Photo Gallery</h3>
-        {% if gallery_photos %}
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                {% for photo in gallery_photos %}
-                    <div style="position: relative;">
-                        <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
-                        {% if can_manage_restaurant %}
-                            <form action="{% url 'restaurants:delete_photo' photo.id %}" method="post" style="position: absolute; top: 5px; right: 5px;" onsubmit="return confirm('Delete this photo?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-sm btn-danger" style="padding: 2px 6px;">X</button>
-                            </form>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p style="color:#999; margin:0;">No photos in the gallery yet.</p>
-        {% endif %}
-
-        {% if can_manage_restaurant %}
-            <div style="margin-top: 0.85rem;">
-                <a class="btn-edit" href="{% url 'restaurants:add_photo' restaurant.id %}">➕ Add Photo</a>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Menu -->
-    <div class="section-card">
-        <h3>📋 Menu</h3>
-        {% if menu_items %}
-            <ul class="menu-list">
-                {% for item in menu_items %}
-                <li class="menu-item">
-                    <div class="menu-item-info">
-                        <strong>{{ item.name }}</strong>
-                        {% if item.category %}
-                            <span class="badge" style="font-size: 0.75rem; background: #e0f2fe; border-color: #bae6fd; color: #0284c7; margin-left: 5px;">{{ item.category }}</span>
-                        {% endif %}
-                        {% if item.description %}<small>{{ item.description }}</small>{% endif %}
-                        {% if can_manage_restaurant %}
-                        <div class="menu-item-actions">
-                            <a class="btn-sm" href="{% url 'restaurants:edit_menu_item' item.id %}">Edit</a>
-                            <a class="btn-sm btn-danger" href="{% url 'restaurants:delete_menu_item' item.id %}">Delete</a>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="menu-item-price">₺{{ item.price }}</div>
-                </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p style="color:#999; margin:0;">No menu items added yet.</p>
-        {% endif %}
-    </div>
-
-    <!-- Favorites -->
-    {% if user.is_authenticated %}
-    <div class="section-card">
-        <h3>🔖 Save This Place</h3>
-        <form action="{% url 'restaurants:toggle_favorite' restaurant.id %}" method="post">
-            {% csrf_token %}
-            {% if is_favorite %}
-                <button type="submit" class="btn-fav active">❤️ Remove from Favorites</button>
-            {% else %}
-                <button type="submit" class="btn-fav">🤍 Save to Favorites</button>
-            {% endif %}
-        </form>
-    </div>
+    <span class="badge">📌 {{ restaurant.address }}</span>
+    {% if restaurant.phone %}
+      <span class="badge">📞 {{ restaurant.phone }}</span>
     {% endif %}
+    <span class="badge">💰 {{ restaurant.get_price_range_display }}</span>
+    <span class="badge" style="background:var(--primary-soft); color:var(--primary); border-color:#ffd0b5;">
+      ⭐ {{ restaurant.average_rating }} / 5
+    </span>
+  </div>
 
-    <!-- Write a Review -->
-    {% if user.is_authenticated %}
-    <div class="section-card">
-        <h3>✍️ Write a Review</h3>
-        <form class="review-form" action="{% url 'restaurants:add_review' restaurant.id %}" method="post">
-            {% csrf_token %}
-            <label>Rating</label>
-            <div class="star-rating">
-                <button type="button" class="star-btn" data-value="1" aria-label="Rate 1 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="2" aria-label="Rate 2 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="3" aria-label="Rate 3 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="4" aria-label="Rate 4 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="5" aria-label="Rate 5 out of 5">★</button>
-              </div>
-              
-              <input type="hidden" name="rating" id="rating-input" required>
-            
+  {% if restaurant.description %}
+    <p class="detail-desc">{{ restaurant.description }}</p>
+  {% endif %}
 
-            <label for="id_comment">Comment</label>
-            <textarea name="comment" id="id_comment" rows="4" required placeholder="Share your experience..."></textarea>
-
-            <button type="submit" class="btn-primary">Submit Review</button>
-        </form>
+  <!-- Google Maps -->
+  {% if restaurant.google_maps_embed_url %}
+  <div class="section-card">
+    <span class="section-card__title">📍 Location</span>
+    <div style="width:100%; height:320px; margin-top:0.75rem;">
+      <iframe
+        src="{{ restaurant.google_maps_embed_url }}"
+        width="100%" height="100%"
+        style="border:0; border-radius:var(--radius-sm);"
+        allowfullscreen loading="lazy"
+        title="Map of {{ restaurant.name }}">
+      </iframe>
     </div>
-    {% else %}
-        <p><a href="{% url 'login' %}?next={{ request.path }}" style="color:#ff6b35; font-weight:600;">Log in</a> to save favorites or post a review.</p>
-    {% endif %}
+  </div>
+  {% endif %}
 
-    <!-- Reviews -->
-    <div class="section-card">
-        <h3>💬 Reviews</h3>
-        {% for review in reviews %}
-        <div class="review-card">
-            <div class="review-header">
-                <span class="review-user">{{ review.user.username }}</span>
-                {% if review.rating %}
-                    <span class="review-rating">
-                        {% for i in "12345" %}{% if forloop.counter <= review.rating %}⭐{% endif %}{% endfor %}
-                        ({{ review.rating }}/5)
-                    </span>
-                {% endif %}
-                <span class="review-date">{{ review.created_at|date:"F d, Y" }}</span>
-            </div>
-            <p class="review-comment">{{ review.comment }}</p>
+  <!-- Owner Management Bar -->
+  {% if can_manage_restaurant %}
+  <div class="manage-bar">
+    <span class="manage-bar__label">⚙️ Manage</span>
+    <a class="btn btn-blue btn-sm" href="{% url 'restaurants:edit_restaurant' restaurant.id %}" id="edit-restaurant-btn">✏️ Edit</a>
+    <form action="{% url 'restaurants:delete_restaurant' restaurant.id %}" method="post" style="display:inline;"
+          onsubmit="return confirm('Delete this restaurant? This action cannot be undone.');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-sm" id="delete-restaurant-btn">🗑️ Delete</button>
+    </form>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_menu_item' restaurant.id %}" id="add-menu-item-btn">➕ Menu Item</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_opening_hours' restaurant.id %}" id="add-hours-btn">🕐 Add Hours</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_photo' restaurant.id %}" id="add-photo-btn">📸 Add Photo</a>
+  </div>
+  {% endif %}
 
-            {% if user.is_authenticated and review.user == user %}
-            <div class="review-actions">
-                <a class="btn-sm" href="{% url 'restaurants:edit_review' review.id %}">Edit</a>
-                <form action="{% url 'restaurants:delete_review' review.id %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-sm btn-danger">Delete</button>
-                </form>
-            </div>
-            {% endif %}
-
-            <!-- Replies List -->
-            {% if review.replies.count %}
-            <div class="replies-section">
-                {% for reply in review.replies.all %}
-                <div class="reply-card">
-                    <div class="reply-header">
-                        <span class="reply-user">↩ {{ reply.user.username }}</span>
-                        <span class="reply-date">{{ reply.created_at|date:"F d, Y" }}</span>
-                    </div>
-                    <p class="reply-comment">{{ reply.comment }}</p>
-                    {% if user.is_authenticated and reply.user == user %}
-                    <form action="{% url 'restaurants:delete_review' reply.id %}" method="post" style="margin-top:0.3rem;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-sm btn-danger">Delete Reply</button>
-                    </form>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <!-- Reply Form -->
-            {% if user.is_authenticated %}
-            <div class="reply-form">
-                <form action="{% url 'restaurants:add_reply' review.id %}" method="post">
-                    {% csrf_token %}
-                    <textarea name="comment" rows="2" placeholder="Write a reply..." required></textarea>
-                    <button type="submit">Reply</button>
-                </form>
-            </div>
-            {% endif %}
-        </div>
-        {% empty %}
-            <p style="color:#999;">No reviews yet. Be the first to review!</p>
+  <!-- Opening Hours -->
+  <div class="section-card">
+    <span class="section-card__title">🕐 Opening Hours</span>
+    {% if opening_hours %}
+      <table class="hours-table">
+        {% for hours in opening_hours %}
+        <tr>
+          <td>{{ hours.get_day_display }}</td>
+          <td>{{ hours.open_time|time:"H:i" }} – {{ hours.close_time|time:"H:i" }}</td>
+          {% if can_manage_restaurant %}
+          <td style="text-align:right;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_opening_hours' hours.id %}">Edit</a>
+            <form action="{% url 'restaurants:delete_opening_hours' hours.id %}" method="post" style="display:inline;"
+                  onsubmit="return confirm('Delete these opening hours?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
         {% endfor %}
+      </table>
+    {% else %}
+      <div class="empty-state" style="padding:1.5rem 0;">
+        <div class="empty-state__icon">🕐</div>
+        <div class="empty-state__title">No hours listed</div>
+        <div class="empty-state__desc">Opening hours haven't been added for this restaurant yet.</div>
+        {% if can_manage_restaurant %}
+          <a href="{% url 'restaurants:add_opening_hours' restaurant.id %}" class="btn btn-outline btn-sm mt-1">+ Add Opening Hours</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Photo Gallery -->
+  <div class="section-card">
+    <span class="section-card__title">📸 Photo Gallery</span>
+    {% if gallery_photos %}
+      <div class="photo-gallery" style="margin-top:0.75rem;">
+        {% for photo in gallery_photos %}
+          <div class="photo-thumb">
+            <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Gallery photo' }}">
+            {% if can_manage_restaurant %}
+              <form action="{% url 'restaurants:delete_photo' photo.id %}" method="post"
+                    onsubmit="return confirm('Delete this photo?');">
+                {% csrf_token %}
+                <button type="submit" class="photo-thumb__del" title="Delete photo">✕</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding:1.5rem 0;">
+        <div class="empty-state__icon">📷</div>
+        <div class="empty-state__title">No photos yet</div>
+        <div class="empty-state__desc">This restaurant hasn't added any gallery photos yet.</div>
+        {% if can_manage_restaurant %}
+          <a href="{% url 'restaurants:add_photo' restaurant.id %}" class="btn btn-outline btn-sm mt-1">+ Add Photo</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Menu -->
+  <div class="section-card">
+    <span class="section-card__title">📋 Menu</span>
+    {% if menu_items %}
+      <ul class="menu-list" style="margin-top:0.75rem;">
+        {% for item in menu_items %}
+        <li class="menu-item">
+          <div class="menu-item-info">
+            <strong>{{ item.name }}</strong>
+            {% if item.category %}
+              <span class="badge" style="font-size:0.72rem; background:#e0f2fe; border-color:#bae6fd; color:#0284c7; margin-left:4px;">{{ item.category }}</span>
+            {% endif %}
+            {% if item.description %}<small>{{ item.description }}</small>{% endif %}
+            {% if can_manage_restaurant %}
+              <div class="menu-item-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_menu_item' item.id %}">Edit</a>
+                <a class="btn btn-danger btn-sm" href="{% url 'restaurants:delete_menu_item' item.id %}"
+                   onclick="return confirm('Delete {{ item.name }}?');">Delete</a>
+              </div>
+            {% endif %}
+          </div>
+          <div class="menu-item-price">₺{{ item.price }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-state" style="padding:1.5rem 0;">
+        <div class="empty-state__icon">📋</div>
+        <div class="empty-state__title">Menu not available</div>
+        <div class="empty-state__desc">No menu items have been added for this restaurant yet.</div>
+        {% if can_manage_restaurant %}
+          <a href="{% url 'restaurants:add_menu_item' restaurant.id %}" class="btn btn-outline btn-sm mt-1">+ Add Menu Item</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Favorite -->
+  {% if user.is_authenticated %}
+  <div class="section-card" style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+    <span class="section-card__title" style="margin-bottom:0;">🔖 Save This Place</span>
+    <form action="{% url 'restaurants:toggle_favorite' restaurant.id %}" method="post" style="display:inline;">
+      {% csrf_token %}
+      {% if is_favorite %}
+        <button type="submit" class="btn-fav active" id="fav-btn">❤️ Remove from Favorites</button>
+      {% else %}
+        <button type="submit" class="btn-fav" id="fav-btn">🤍 Save to Favorites</button>
+      {% endif %}
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- Write a Review -->
+  {% if user.is_authenticated %}
+  <div class="section-card">
+    <span class="section-card__title">✍️ Write a Review</span>
+    <form class="fm-form" action="{% url 'restaurants:add_review' restaurant.id %}" method="post" style="margin-top:0.75rem;">
+      {% csrf_token %}
+      <label>Your Rating</label>
+      <div class="star-rating" role="group" aria-label="Select rating">
+        <button type="button" class="star-btn" data-value="1" aria-label="Rate 1 star">★</button>
+        <button type="button" class="star-btn" data-value="2" aria-label="Rate 2 stars">★</button>
+        <button type="button" class="star-btn" data-value="3" aria-label="Rate 3 stars">★</button>
+        <button type="button" class="star-btn" data-value="4" aria-label="Rate 4 stars">★</button>
+        <button type="button" class="star-btn" data-value="5" aria-label="Rate 5 stars">★</button>
+      </div>
+      <input type="hidden" name="rating" id="rating-input" required>
+
+      <label for="id_comment">Your Comment</label>
+      <textarea name="comment" id="id_comment" rows="4" required placeholder="Share your experience..."></textarea>
+
+      <button type="submit" class="btn btn-primary" id="submit-review-btn">Submit Review</button>
+    </form>
+  </div>
+  {% else %}
+    <div class="section-card" style="text-align:center; padding:1.5rem;">
+      <p style="color:var(--text-mid); margin-bottom:0.75rem;">
+        Want to share your experience?
+      </p>
+      <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary" id="login-to-review-btn">
+        Log in to Review or Save
+      </a>
+    </div>
+  {% endif %}
+
+  <!-- Reviews -->
+  <div class="section-card">
+    <span class="section-card__title">💬 Reviews</span>
+
+    {% for review in reviews %}
+    <div class="review-card" id="review-{{ review.id }}">
+      <div class="review-header">
+        <div class="review-avatar">{{ review.user.username|first|upper }}</div>
+        <span class="review-user">{{ review.user.username }}</span>
+        {% if review.rating %}
+          <span class="review-stars">
+            {% for i in "12345" %}{% if forloop.counter <= review.rating %}⭐{% endif %}{% endfor %}
+            ({{ review.rating }}/5)
+          </span>
+        {% endif %}
+        <span class="review-date">{{ review.created_at|date:"F d, Y" }}</span>
+      </div>
+
+      <p class="review-comment">{{ review.comment }}</p>
+
+      {% if user.is_authenticated and review.user == user %}
+      <div class="review-actions">
+        <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_review' review.id %}">✏️ Edit</a>
+        <form action="{% url 'restaurants:delete_review' review.id %}" method="post" style="display:inline;"
+              onsubmit="return confirm('Delete your review?');">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Replies -->
+      {% if review.replies.count %}
+      <div class="replies-section">
+        {% for reply in review.replies.all %}
+        <div class="reply-card" id="reply-{{ reply.id }}">
+          <div class="reply-header">
+            <span class="reply-user">↩ {{ reply.user.username }}</span>
+            <span class="reply-date">{{ reply.created_at|date:"F d, Y" }}</span>
+          </div>
+          <p class="reply-comment">{{ reply.comment }}</p>
+          {% if user.is_authenticated and reply.user == user %}
+          <form action="{% url 'restaurants:delete_review' reply.id %}" method="post" style="margin-top:0.3rem;"
+                onsubmit="return confirm('Delete this reply?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Delete Reply</button>
+          </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Reply Form -->
+      {% if user.is_authenticated %}
+      <div class="reply-form">
+        <form action="{% url 'restaurants:add_reply' review.id %}" method="post">
+          {% csrf_token %}
+          <textarea name="comment" rows="2" placeholder="Write a reply..." required></textarea>
+          <button type="submit" class="btn btn-ghost btn-sm">↩ Reply</button>
+        </form>
+      </div>
+      {% endif %}
     </div>
 
-    <a class="back-link" href="{% url 'restaurants:list' %}">← Back to Restaurant List</a>
+    {% empty %}
+      <div class="empty-state" style="padding:1.5rem 0;">
+        <div class="empty-state__icon">💬</div>
+        <div class="empty-state__title">No reviews yet</div>
+        <div class="empty-state__desc">Be the first to share your experience at {{ restaurant.name }}!</div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <a class="btn btn-ghost" href="{% url 'restaurants:list' %}" style="margin-bottom:2rem;" id="back-to-list-btn">← Back to Restaurants</a>
 
 </div>
+
 <script>
-  (function () {
-    const input = document.getElementById("rating-input");
-    const stars = document.querySelectorAll(".star-btn");
+(function () {
+  const input = document.getElementById("rating-input");
+  const stars = document.querySelectorAll(".star-btn");
+  if (!input || !stars.length) return;
 
-    if (!input || stars.length === 0) return;
+  function paint(value) {
+    stars.forEach((star, idx) => star.classList.toggle("active", idx < value));
+  }
 
-    function paint(value) {
-      stars.forEach((star, idx) => {
-        star.classList.toggle("active", idx < value);
-      });
-    }
-
-    stars.forEach((star) => {
-      star.addEventListener("click", () => {
-        const value = Number(star.dataset.value || 0);
-        input.value = String(value);
-        paint(value);
-      });
+  stars.forEach(star => {
+    star.addEventListener("mouseover", () => {
+      if (!input.value) paint(Number(star.dataset.value));
     });
-  })();
-</script>
+    star.addEventListener("click", () => {
+      const value = Number(star.dataset.value || 0);
+      input.value = String(value);
+      paint(value);
+    });
+  });
 
+  document.querySelector(".star-rating")?.addEventListener("mouseleave", () => {
+    paint(Number(input.value) || 0);
+  });
+})();
+</script>
 {% endblock %}

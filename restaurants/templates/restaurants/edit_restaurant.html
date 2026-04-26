@@ -1,7 +1,28 @@
-<h2>Edit Restaurant</h2>
+{% extends 'restaurants/base.html' %}
+{% block title %}Edit {{ restaurant.name }} – FlavorMap{% endblock %}
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Update Restaurant</button>
-</form>
+{% block content %}
+<div class="page-container page-container--narrow">
+  <div class="section-card">
+    <span class="section-card__title">✏️ Edit Restaurant</span>
+    <p style="color:var(--text-light); font-size:0.88rem; margin-bottom:1rem;">{{ restaurant.name }}</p>
+    <form class="fm-form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for field in form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+          <small style="color:var(--text-light); font-size:0.8rem; margin-top:-0.75rem; display:block; margin-bottom:0.75rem;">{{ field.help_text }}</small>
+        {% endif %}
+        {% for error in field.errors %}
+          <p style="color:#c0392b; font-size:0.82rem; margin-top:-0.75rem;">{{ error }}</p>
+        {% endfor %}
+      {% endfor %}
+      <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;">
+        <button type="submit" class="btn btn-primary" id="save-restaurant-btn">Save Changes</button>
+        <a href="{% url 'restaurants:detail' restaurant.id %}" class="btn btn-ghost" id="cancel-edit-restaurant-btn">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

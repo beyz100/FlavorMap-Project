@@ -1,6 +1,25 @@
 {% extends 'restaurants/base.html' %}
+{% block title %}Contact – FlavorMap{% endblock %}
+{% block meta_description %}Get in touch with the FlavorMap team.{% endblock %}
 
 {% block content %}
-    <h2>{{ title }}</h2>
-    <p>You can reach us at admin@flavormap.com.</p>
+<div class="page-container page-container--narrow">
+
+  <div class="page-hero" style="padding:2.5rem 2rem;">
+    <h1>Contact Us</h1>
+    <p>Have questions, feedback, or want to list your restaurant? We'd love to hear from you.</p>
+  </div>
+
+  <div class="section-card" style="text-align:center; padding:2.5rem;">
+    <div style="font-size:3rem; margin-bottom:1rem;">📬</div>
+    <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:0.5rem; color:var(--text-dark);">Reach us by email</h2>
+    <p style="color:var(--text-mid); margin-bottom:1rem;">
+      We typically respond within 24 hours.
+    </p>
+    <a href="mailto:admin@flavormap.com" class="btn btn-primary btn-lg" id="email-contact-btn">
+      ✉️ admin@flavormap.com
+    </a>
+  </div>
+
+</div>
 {% endblock %}

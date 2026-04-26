@@ -1,41 +1,63 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>FlavorMap</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FlavorMap – Discover Amazing Restaurants{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}FlavorMap helps you discover the best restaurants near you, explore menus, read reviews, and save your favorites.{% endblock %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'restaurants/css/styles.css' %}">
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="{% url 'restaurants:home' %}">Home</a> |
-            <a href="{% url 'restaurants:list' %}">Restaurants</a> |
-            <a href="{% url 'restaurants:about' %}">About Us</a> |
-            <a href="{% url 'restaurants:contact' %}">Contact</a>
-            {% if user.is_authenticated %}
-                | <a href="{% url 'restaurants:profile' %}">Profile</a>
-                | <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit">Log out</button>
-                </form>
-            {% else %}
-                | <a href="{% url 'login' %}">Log in</a>
-            {% endif %}
-        </nav>
-    </header>
-    <hr>
 
-    <main>
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
+  <!-- Navigation -->
+  <nav class="fm-nav" role="navigation" aria-label="Main navigation">
+    <div class="fm-nav__inner">
+      <a href="{% url 'restaurants:home' %}" class="fm-nav__logo">🍽️ FlavorMap</a>
+      <div class="fm-nav__links">
+        <a href="{% url 'restaurants:home' %}" class="fm-nav__link">Home</a>
+        <a href="{% url 'restaurants:list' %}" class="fm-nav__link">Restaurants</a>
+        <a href="{% url 'restaurants:about' %}" class="fm-nav__link">About</a>
+        <a href="{% url 'restaurants:contact' %}" class="fm-nav__link">Contact</a>
+      </div>
+      <div class="fm-nav__actions">
+        {% if user.is_authenticated %}
+          <span class="fm-nav__user">👤 {{ user.username }}</span>
+          <a href="{% url 'restaurants:profile' %}" class="btn btn-ghost btn-sm">Profile</a>
+          <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm">Log out</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Log in</a>
         {% endif %}
-        {% block content %}
-        {% endblock %}
-    </main>
+      </div>
+    </div>
+  </nav>
 
-    <hr>
+  <!-- Flash Messages -->
+  {% if messages %}
+  <div class="messages-bar" role="alert" aria-live="polite">
+    {% for message in messages %}
+      <div class="message message--{{ message.tags|default:'info' }}">
+        {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% else %}ℹ️{% endif %}
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Page Content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="fm-footer">
+    <p>© 2025 FlavorMap — Discover great food near you 🍴</p>
+  </footer>
+
 </body>
 </html>

@@ -1,17 +1,27 @@
 {% extends 'restaurants/base.html' %}
+{% block title %}Edit Opening Hours – FlavorMap{% endblock %}
 
 {% block content %}
-    <h2>Edit Opening Hours</h2>
-    <p><strong>{{ restaurant.name }}</strong> — {{ opening_hours.get_day_display }}</p>
-
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
-    </form>
-
-    <p>
-        <a href="{% url 'restaurants:detail' restaurant.id %}">Back to restaurant</a>
+<div class="page-container page-container--narrow">
+  <div class="section-card">
+    <span class="section-card__title">✏️ Edit Opening Hours</span>
+    <p style="color:var(--text-light); font-size:0.88rem; margin-bottom:1rem;">
+      for <a href="{% url 'restaurants:detail' restaurant.id %}" style="color:var(--primary); font-weight:600;">{{ restaurant.name }}</a>
     </p>
+    <form class="fm-form" method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}
+          <p style="color:#c0392b; font-size:0.82rem; margin-top:-0.75rem;">{{ error }}</p>
+        {% endfor %}
+      {% endfor %}
+      <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;">
+        <button type="submit" class="btn btn-primary" id="save-hours-btn">Save Changes</button>
+        <a href="{% url 'restaurants:detail' restaurant.id %}" class="btn btn-ghost" id="cancel-edit-hours-btn">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}
-

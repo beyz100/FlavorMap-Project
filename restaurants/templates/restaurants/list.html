@@ -1,57 +1,114 @@
 {% extends 'restaurants/base.html' %}
+{% block title %}Restaurants – FlavorMap{% endblock %}
+{% block meta_description %}Browse, search, and filter all restaurants on FlavorMap. Find by category, location, price, or rating.{% endblock %}
 
 {% block content %}
+<div class="page-container">
 
-<h2>Restaurant List</h2>
+  <h1 class="section-heading" style="font-size:1.8rem; margin-bottom:1.5rem;">🍴 All Restaurants</h1>
 
-<form method="GET">
-    <input type="text" name="q" placeholder="Search restaurants..." value="{{ request.GET.q }}">
-    
-    <select name="category">
-        <option value="">All Categories</option>
-        {% for cat in categories %}
-            <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
-        {% endfor %}
-    </select>
-    <select name="location">
-        <option value="">All Locations</option>
-        {% for loc in locations %}
-            <option value="{{ loc.id }}" {% if request.GET.location == loc.id|stringformat:"s" %}selected{% endif %}>{{ loc.name }}</option>
-        {% endfor %}
-    </select>
-    <select name="price">
-        <option value="">All Prices</option>
-        <option value="1" {% if request.GET.price == "1" %}selected{% endif %}>₺</option>
-        <option value="2" {% if request.GET.price == "2" %}selected{% endif %}>₺₺</option>
-        <option value="3" {% if request.GET.price == "3" %}selected{% endif %}>₺₺₺</option>
-    </select>
-    
-    <select name="sort">
-        <option value="">Sort by: Default</option>
-        <option value="rating" {% if request.GET.sort == "rating" %}selected{% endif %}>Sort by: Rating (High to Low)</option>
+  <!-- Filter Bar -->
+  <form method="GET" class="filter-bar" id="filter-form" role="search" aria-label="Filter restaurants">
+    <input
+      type="text"
+      name="q"
+      id="search-input"
+      placeholder="🔍 Search restaurants..."
+      value="{{ request.GET.q }}"
+      aria-label="Search by name, description, or location"
+      style="flex:2; max-width:260px;"
+    >
+
+    <select name="category" id="category-select" aria-label="Filter by category">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+          {{ cat.name }}
+        </option>
+      {% endfor %}
     </select>
 
-    <button type="submit">Filter & Sort</button>
-</form>
+    <select name="location" id="location-select" aria-label="Filter by location">
+      <option value="">All Locations</option>
+      {% for loc in locations %}
+        <option value="{{ loc.id }}" {% if request.GET.location == loc.id|stringformat:"s" %}selected{% endif %}>
+          {{ loc.name }}
+        </option>
+      {% endfor %}
+    </select>
 
-<ul>
-    {% for restaurant in restaurants %}
-        <li style="margin-bottom: 15px;">
-            {% if restaurant.photo %}
-                <div style="margin-bottom: 5px;">
-                    <img src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}" style="max-width: 150px; height: 100px; border-radius: 8px; object-fit: cover;">
-                </div>
-            {% endif %}
-            <strong>{{ restaurant.name }}</strong> -
-            Category: {{ restaurant.category.name }} |
-            Location: {{ restaurant.location.name|default:"Not specified" }} |
-            Rating: {{ restaurant.annotated_avg_rating|default:0|floatformat:1 }} |
-            Price: {{ restaurant.get_price_range_display }} |
-            <a href="{% url 'restaurants:detail' restaurant.id %}">View Details</a>
-        </li>
-    {% empty %}
-        <li>No restaurants found.</li>
-    {% endfor %}
-</ul>
+    <select name="price" id="price-select" aria-label="Filter by price range">
+      <option value="">All Prices</option>
+      <option value="1" {% if request.GET.price == "1" %}selected{% endif %}>₺ Budget</option>
+      <option value="2" {% if request.GET.price == "2" %}selected{% endif %}>₺₺ Mid-range</option>
+      <option value="3" {% if request.GET.price == "3" %}selected{% endif %}>₺₺₺ Premium</option>
+    </select>
 
+    <select name="sort" id="sort-select" aria-label="Sort restaurants">
+      <option value="">Default Order</option>
+      <option value="rating" {% if request.GET.sort == "rating" %}selected{% endif %}>⭐ Highest Rating</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary" id="filter-btn">Filter</button>
+
+    {% if request.GET.q or request.GET.category or request.GET.location or request.GET.price or request.GET.sort %}
+      <a href="{% url 'restaurants:list' %}" class="btn btn-ghost" id="clear-btn">✕ Clear</a>
+    {% endif %}
+  </form>
+
+  <!-- Results -->
+  {% if restaurants %}
+    <div class="restaurant-grid" id="results-grid">
+      {% for restaurant in restaurants %}
+        <a class="r-card" href="{% url 'restaurants:detail' restaurant.id %}" id="restaurant-card-{{ restaurant.id }}">
+          {% if restaurant.photo %}
+            <img class="r-card__img" src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}">
+          {% else %}
+            <div class="r-card__placeholder">
+              {% if restaurant.category.name == "Pizza" %}🍕
+              {% elif restaurant.category.name == "Burger" %}🍔
+              {% elif restaurant.category.name == "Sushi" %}🍱
+              {% else %}🍽️{% endif %}
+            </div>
+          {% endif %}
+          <div class="r-card__body">
+            <div class="r-card__name">{{ restaurant.name }}</div>
+            <div class="r-card__meta">
+              <span>{{ restaurant.category.name }}</span>
+              {% if restaurant.location %}
+                <span> · 📍 {{ restaurant.location.name }}</span>
+              {% endif %}
+              <span> · {{ restaurant.get_price_range_display }}</span>
+            </div>
+            <div class="r-card__rating">
+              {% if restaurant.annotated_avg_rating %}
+                ⭐ {{ restaurant.annotated_avg_rating|floatformat:1 }} / 5
+              {% else %}
+                <span style="color:var(--text-light); font-weight:400;">No ratings yet</span>
+              {% endif %}
+            </div>
+            <div class="r-card__footer">View Details →</div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state" style="min-height:320px;">
+      <div class="empty-state__icon">🔍</div>
+      <div class="empty-state__title">No restaurants found</div>
+      <div class="empty-state__desc">
+        Try adjusting your search filters or clear them to see all restaurants.
+      </div>
+      <a href="{% url 'restaurants:list' %}" class="btn btn-outline mt-2" id="clear-filters-btn">Clear All Filters</a>
+    </div>
+  {% endif %}
+
+  {% if user.is_authenticated %}
+    <div style="text-align:center; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+      <p style="color:var(--text-light); font-size:0.9rem; margin-bottom:0.75rem;">Can't find your favourite spot?</p>
+      <a href="{% url 'restaurants:create' %}" class="btn btn-primary" id="add-restaurant-btn">+ Add a Restaurant</a>
+    </div>
+  {% endif %}
+
+</div>
 {% endblock %}
