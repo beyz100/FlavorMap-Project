@@ -24,7 +24,7 @@ class Restaurant(models.Model):
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name='restaurants')
     description = models.TextField()
     address = models.CharField(max_length=255)
-    google_maps_embed_url = models.URLField(blank=True, null=True)
+    google_maps_embed_url = models.URLField(max_length=1000, blank=True, null=True)
 
     PRICE_CHOICES = [
         ('1', '₺'),
