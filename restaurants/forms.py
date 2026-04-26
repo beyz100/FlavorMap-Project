@@ -4,7 +4,7 @@ from .models import OpeningHours, Restaurant, MenuItem, Review, RestaurantPhoto
 class RestaurantForm(forms.ModelForm):
     class Meta:
         model = Restaurant
-        fields = ['name', 'category', 'location', 'description', 'address', 'phone', 'price_range', 'photo']
+        fields = ['name', 'category', 'location', 'description', 'address', 'phone', 'price_range', 'photo', 'google_maps_embed_url']
 
 class MenuItemForm(forms.ModelForm):
     class Meta:
