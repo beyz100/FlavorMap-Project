@@ -231,9 +231,9 @@ def toggle_favorite(request, id):
     )
     if not created:
         favorite.delete()
-        messages.success(request, "Removed from your favorites.")
+        messages.success(request, "Restaurant removed from favorites.")
     else:
-        messages.success(request, "Saved to your favorites.")
+        messages.success(request, "Restaurant set as favorite.")
     return redirect("restaurants:detail", id=id)
 
 
