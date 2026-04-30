@@ -75,6 +75,14 @@ class Review(models.Model):
             )
         ]
 
+class ReviewLike(models.Model):
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_like = models.BooleanField()  # True = like, False = dislike
+
+    class Meta:
+        unique_together = ('review', 'user')
+
     def __str__(self):
         return f"{self.restaurant.name} - {self.user.username}"
 
