@@ -26,11 +26,10 @@ class RestaurantPhotoInline(admin.TabularInline):
 
 @admin.register(Restaurant)
 class RestaurantAdmin(admin.ModelAdmin):
-    list_display = ('name', 'owner', 'category', 'location', 'average_rating')
-    list_filter = ('category', 'location')
+    list_display = ('name', 'owner', 'category', 'location', 'price_range', 'average_rating')
+    list_filter = ('category', 'location', 'price_range')
     search_fields = ('name', 'description')
     inlines = [RestaurantPhotoInline]
-    list_display = ("name", "location", "price_range", "google_maps_embed_url")
 
 @admin.register(MenuItem)
 class MenuItemAdmin(admin.ModelAdmin):
