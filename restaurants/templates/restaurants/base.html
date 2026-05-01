@@ -24,7 +24,7 @@
       </div>
       <div class="fm-nav__actions">
         {% if user.is_authenticated %}
-          <span class="fm-nav__user">👤 {{ user.username }}</span>
+          <span class="fm-nav__user">{{ user.username }}</span>
           <a href="{% url 'restaurants:profile' %}" class="btn btn-ghost btn-sm">Profile</a>
           <form action="{% url 'logout' %}" method="post" style="display:inline;">
             {% csrf_token %}
