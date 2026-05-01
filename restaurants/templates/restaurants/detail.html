@@ -333,18 +333,24 @@
     <!-- Owner Management Bar -->
     {% if can_manage_restaurant %}
     <div class="manage-bar">
-        <a class="btn-edit" href="{% url 'restaurants:edit_restaurant' restaurant.id %}">✏️ Edit Restaurant</a>
-        <form action="{% url 'restaurants:delete_restaurant' restaurant.id %}" method="post" style="display:inline;" onsubmit="return confirm('Delete this restaurant? This cannot be undone.');">
+        <a class="btn-edit" href="{% url 'restaurants:edit_restaurant' restaurant.id %}" data-en="✏️ Edit Restaurant" data-tr="✏️ Restoranı Düzenle">✏️ Edit Restaurant</a>
+        <form
+            action="{% url 'restaurants:delete_restaurant' restaurant.id %}"
+            method="post"
+            style="display:inline;"
+            data-confirm-en="Delete this restaurant? This cannot be undone."
+            data-confirm-tr="Bu restoran silinsin mi? Bu işlem geri alınamaz."
+        >
             {% csrf_token %}
-            <button type="submit" class="btn-delete">🗑️ Delete Restaurant</button>
+            <button type="submit" class="btn-delete" data-en="🗑️ Delete Restaurant" data-tr="🗑️ Restoranı Sil">🗑️ Delete Restaurant</button>
         </form>
-        <a class="btn-edit" href="{% url 'restaurants:add_menu_item' restaurant.id %}">➕ Add Menu Item</a>
+        <a class="btn-edit" href="{% url 'restaurants:add_menu_item' restaurant.id %}" data-en="➕ Add Menu Item" data-tr="➕ Menü Öğesi Ekle">➕ Add Menu Item</a>
     </div>
     {% endif %}
 
     <!-- Opening Hours -->
     <div class="section-card">
-        <h3>🕐 Opening Hours</h3>
+        <h3 data-en="🕐 Opening Hours" data-tr="🕐 Çalışma Saatleri">🕐 Opening Hours</h3>
         {% if opening_hours %}
             <table class="hours-table">
                 {% for hours in opening_hours %}
@@ -353,10 +359,16 @@
                     <td>{{ hours.open_time|time:"H:i" }} – {{ hours.close_time|time:"H:i" }}</td>
                     {% if can_manage_restaurant %}
                         <td style="text-align:right;">
-                            <a class="btn-sm" href="{% url 'restaurants:edit_opening_hours' hours.id %}">Edit</a>
-                            <form action="{% url 'restaurants:delete_opening_hours' hours.id %}" method="post" style="display:inline;" onsubmit="return confirm('Delete these opening hours?');">
+                            <a class="btn-sm" href="{% url 'restaurants:edit_opening_hours' hours.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
+                            <form
+                                action="{% url 'restaurants:delete_opening_hours' hours.id %}"
+                                method="post"
+                                style="display:inline;"
+                                data-confirm-en="Delete these opening hours?"
+                                data-confirm-tr="Bu çalışma saatleri silinsin mi?"
+                            >
                                 {% csrf_token %}
-                                <button type="submit" class="btn-sm btn-danger">Delete</button>
+                                <button type="submit" class="btn-sm btn-danger" data-en="Delete" data-tr="Sil">Delete</button>
                             </form>
                         </td>
                     {% endif %}
@@ -364,19 +376,19 @@
                 {% endfor %}
             </table>
         {% else %}
-            <p style="color:#999; margin:0;">Opening hours not specified.</p>
+            <p style="color:#999; margin:0;" data-en="Opening hours not specified." data-tr="Çalışma saatleri belirtilmemiş.">Opening hours not specified.</p>
         {% endif %}
 
         {% if can_manage_restaurant %}
             <div style="margin-top: 0.85rem;">
-                <a class="btn-edit" href="{% url 'restaurants:add_opening_hours' restaurant.id %}">➕ Add Opening Hours</a>
+                <a class="btn-edit" href="{% url 'restaurants:add_opening_hours' restaurant.id %}" data-en="➕ Add Opening Hours" data-tr="➕ Çalışma Saati Ekle">➕ Add Opening Hours</a>
             </div>
         {% endif %}
     </div>
 
     <!-- Menu -->
     <div class="section-card">
-        <h3>📋 Menu</h3>
+        <h3 data-en="📋 Menu" data-tr="📋 Menü">📋 Menu</h3>
         {% if menu_items %}
             <ul class="menu-list">
                 {% for item in menu_items %}
@@ -386,8 +398,8 @@
                         {% if item.description %}<small>{{ item.description }}</small>{% endif %}
                         {% if can_manage_restaurant %}
                         <div class="menu-item-actions">
-                            <a class="btn-sm" href="{% url 'restaurants:edit_menu_item' item.id %}">Edit</a>
-                            <a class="btn-sm btn-danger" href="{% url 'restaurants:delete_menu_item' item.id %}">Delete</a>
+                            <a class="btn-sm" href="{% url 'restaurants:edit_menu_item' item.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
+                            <a class="btn-sm btn-danger" href="{% url 'restaurants:delete_menu_item' item.id %}" data-en="Delete" data-tr="Sil">Delete</a>
                         </div>
                         {% endif %}
                     </div>
@@ -396,20 +408,20 @@
                 {% endfor %}
             </ul>
         {% else %}
-            <p style="color:#999; margin:0;">No menu items added yet.</p>
+            <p style="color:#999; margin:0;" data-en="No menu items added yet." data-tr="Henüz menü öğesi eklenmedi.">No menu items added yet.</p>
         {% endif %}
     </div>
 
     <!-- Favorites -->
     {% if user.is_authenticated %}
     <div class="section-card">
-        <h3>🔖 Save This Place</h3>
+        <h3 data-en="🔖 Save This Place" data-tr="🔖 Favorilere Ekle">🔖 Save This Place</h3>
         <form action="{% url 'restaurants:toggle_favorite' restaurant.id %}" method="post">
             {% csrf_token %}
             {% if is_favorite %}
-                <button type="submit" class="btn-fav active">❤️ Remove from Favorites</button>
+                <button type="submit" class="btn-fav active" data-en="❤️ Remove from Favorites" data-tr="❤️ Favorilerden Kaldır">❤️ Remove from Favorites</button>
             {% else %}
-                <button type="submit" class="btn-fav">🤍 Save to Favorites</button>
+                <button type="submit" class="btn-fav" data-en="🤍 Save to Favorites" data-tr="🤍 Favorilere Kaydet">🤍 Save to Favorites</button>
             {% endif %}
         </form>
     </div>
@@ -418,34 +430,37 @@
     <!-- Write a Review -->
     {% if user.is_authenticated %}
     <div class="section-card">
-        <h3>✍️ Write a Review</h3>
+        <h3 data-en="✍️ Write a Review" data-tr="✍️ Yorum Yaz">✍️ Write a Review</h3>
         <form class="review-form" action="{% url 'restaurants:add_review' restaurant.id %}" method="post">
             {% csrf_token %}
-            <label>Rating</label>
+            <label data-en="Rating" data-tr="Puan">Rating</label>
             <div class="star-rating">
-                <button type="button" class="star-btn" data-value="1" aria-label="Rate 1 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="2" aria-label="Rate 2 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="3" aria-label="Rate 3 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="4" aria-label="Rate 4 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="5" aria-label="Rate 5 out of 5">★</button>
+                <button type="button" class="star-btn" data-value="1" aria-label="Rate 1 out of 5" data-en-aria-label="Rate 1 out of 5" data-tr-aria-label="5 üzerinden 1 puan ver">★</button>
+                <button type="button" class="star-btn" data-value="2" aria-label="Rate 2 out of 5" data-en-aria-label="Rate 2 out of 5" data-tr-aria-label="5 üzerinden 2 puan ver">★</button>
+                <button type="button" class="star-btn" data-value="3" aria-label="Rate 3 out of 5" data-en-aria-label="Rate 3 out of 5" data-tr-aria-label="5 üzerinden 3 puan ver">★</button>
+                <button type="button" class="star-btn" data-value="4" aria-label="Rate 4 out of 5" data-en-aria-label="Rate 4 out of 5" data-tr-aria-label="5 üzerinden 4 puan ver">★</button>
+                <button type="button" class="star-btn" data-value="5" aria-label="Rate 5 out of 5" data-en-aria-label="Rate 5 out of 5" data-tr-aria-label="5 üzerinden 5 puan ver">★</button>
               </div>
               
               <input type="hidden" name="rating" id="rating-input" required>
             
 
-            <label for="id_comment">Comment</label>
-            <textarea name="comment" id="id_comment" rows="4" required placeholder="Share your experience..."></textarea>
+            <label for="id_comment" data-en="Comment" data-tr="Yorum">Comment</label>
+            <textarea name="comment" id="id_comment" rows="4" required placeholder="Share your experience..." data-en="Share your experience..." data-tr="Deneyimini paylaş..."></textarea>
 
-            <button type="submit" class="btn-primary">Submit Review</button>
+            <button type="submit" class="btn-primary" data-en="Submit Review" data-tr="Yorumu Gönder">Submit Review</button>
         </form>
     </div>
     {% else %}
-        <p><a href="{% url 'login' %}?next={{ request.path }}" style="color:#ff6b35; font-weight:600;">Log in</a> to save favorites or post a review.</p>
+        <p>
+            <a href="{% url 'login' %}?next={{ request.path }}" style="color:#ff6b35; font-weight:600;" data-en="Log in" data-tr="Giriş Yap">Log in</a>
+            <span data-en=" to save favorites or post a review." data-tr=" favorilere kaydetmek veya yorum yazmak için."> to save favorites or post a review.</span>
+        </p>
     {% endif %}
 
     <!-- Reviews -->
     <div class="section-card">
-        <h3>💬 Reviews</h3>
+        <h3 data-en="💬 Reviews" data-tr="💬 Yorumlar">💬 Reviews</h3>
         {% for review in reviews %}
         <div class="review-card">
             <div class="review-header">
@@ -462,10 +477,10 @@
 
             {% if user.is_authenticated and review.user == user %}
             <div class="review-actions">
-                <a class="btn-sm" href="{% url 'restaurants:edit_review' review.id %}">Edit</a>
+                <a class="btn-sm" href="{% url 'restaurants:edit_review' review.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
                 <form action="{% url 'restaurants:delete_review' review.id %}" method="post" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit" class="btn-sm btn-danger">Delete</button>
+                    <button type="submit" class="btn-sm btn-danger" data-en="Delete" data-tr="Sil">Delete</button>
                 </form>
             </div>
             {% endif %}
@@ -483,7 +498,7 @@
                     {% if user.is_authenticated and reply.user == user %}
                     <form action="{% url 'restaurants:delete_review' reply.id %}" method="post" style="margin-top:0.3rem;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-sm btn-danger">Delete Reply</button>
+                        <button type="submit" class="btn-sm btn-danger" data-en="Delete Reply" data-tr="Yanıtı Sil">Delete Reply</button>
                     </form>
                     {% endif %}
                 </div>
@@ -496,18 +511,18 @@
             <div class="reply-form">
                 <form action="{% url 'restaurants:add_reply' review.id %}" method="post">
                     {% csrf_token %}
-                    <textarea name="comment" rows="2" placeholder="Write a reply..." required></textarea>
-                    <button type="submit">Reply</button>
+                    <textarea name="comment" rows="2" placeholder="Write a reply..." data-en="Write a reply..." data-tr="Yanıt yaz..." required></textarea>
+                    <button type="submit" data-en="Reply" data-tr="Yanıtla">Reply</button>
                 </form>
             </div>
             {% endif %}
         </div>
         {% empty %}
-            <p style="color:#999;">No reviews yet. Be the first to review!</p>
+            <p style="color:#999;" data-en="No reviews yet. Be the first to review!" data-tr="Henüz yorum yok. İlk yorumu sen yaz!">No reviews yet. Be the first to review!</p>
         {% endfor %}
     </div>
 
-    <a class="back-link" href="{% url 'restaurants:list' %}">← Back to Restaurant List</a>
+    <a class="back-link" href="{% url 'restaurants:list' %}" data-en="← Back to Restaurant List" data-tr="← Restoran Listesine Dön">← Back to Restaurant List</a>
 
 </div>
 <script>
@@ -517,11 +532,34 @@
 
     if (!input || stars.length === 0) return;
 
+    function getCurrentLang() {
+      try {
+        return localStorage.getItem("flavormap_lang") === "tr" ? "tr" : "en";
+      } catch (e) {
+        return "en";
+      }
+    }
+
+    function confirmI18n(messageEn, messageTr) {
+      const lang = getCurrentLang();
+      return window.confirm(lang === "tr" ? (messageTr || messageEn) : (messageEn || messageTr));
+    }
+
     function paint(value) {
       stars.forEach((star, idx) => {
         star.classList.toggle("active", idx < value);
       });
     }
+
+    document.querySelectorAll("form[data-confirm-en], form[data-confirm-tr]").forEach((form) => {
+      form.addEventListener("submit", (e) => {
+        const messageEn = form.getAttribute("data-confirm-en") || "";
+        const messageTr = form.getAttribute("data-confirm-tr") || "";
+        if (!confirmI18n(messageEn, messageTr)) {
+          e.preventDefault();
+        }
+      });
+    });
 
     stars.forEach((star) => {
       star.addEventListener("click", () => {

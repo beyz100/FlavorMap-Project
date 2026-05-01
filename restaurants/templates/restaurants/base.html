@@ -3,22 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <title>FlavorMap</title>
+    <style>
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        nav a {
+            text-decoration: none;
+        }
+        .lang-toggle {
+            margin-left: auto;
+            display: inline-flex;
+            gap: 0.35rem;
+        }
+        .lang-btn {
+            border: 1px solid #ddd;
+            background: #fff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .lang-btn:focus-visible {
+            outline: 2px solid #ff6b35;
+            outline-offset: 2px;
+        }
+        .lang-btn[aria-pressed="true"] {
+            border-color: #ff6b35;
+            color: #ff6b35;
+        }
+        .nav-links {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .nav-links a + a {
+            position: relative;
+            padding-left: 0.75rem;
+        }
+        .nav-links a + a::before {
+            content: "";
+            position: absolute;
+            left: 0.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 1rem;
+            background: #ddd;
+        }
+    </style>
 </head>
 <body>
     <header>
         <nav>
-            <a href="{% url 'restaurants:home' %}">Home</a> |
-            <a href="{% url 'restaurants:list' %}">Restaurants</a> |
-            <a href="{% url 'restaurants:about' %}">About Us</a> |
-            <a href="{% url 'restaurants:contact' %}">Contact</a>
+            <span class="nav-links">
+                <a href="{% url 'restaurants:home' %}" data-en="Home" data-tr="Ana Sayfa">Home</a>
+                <a href="{% url 'restaurants:list' %}" data-en="Restaurants" data-tr="Restoranlar">Restaurants</a>
+                <a href="{% url 'restaurants:about' %}" data-en="About Us" data-tr="Hakkımızda">About Us</a>
+                <a href="{% url 'restaurants:contact' %}" data-en="Contact" data-tr="İletişim">Contact</a>
+            </span>
+
+            <span class="lang-toggle" role="group" aria-label="Language">
+                <button type="button" class="lang-btn" data-lang="tr" aria-pressed="false">TR</button>
+                <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">ENG</button>
+            </span>
             {% if user.is_authenticated %}
-                | <a href="{% url 'restaurants:profile' %}">Profile</a>
-                | <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                <a href="{% url 'restaurants:profile' %}" data-en="Profile" data-tr="Profil">Profile</a>
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit">Log out</button>
+                    <button type="submit" data-en="Log out" data-tr="Çıkış Yap">Log out</button>
                 </form>
             {% else %}
-                | <a href="{% url 'login' %}">Log in</a>
+                <a href="{% url 'login' %}" data-en="Log in" data-tr="Giriş Yap">Log in</a>
             {% endif %}
         </nav>
     </header>
@@ -37,5 +97,66 @@
     </main>
 
     <hr>
+    <script>
+        function getCurrentLang() {
+          try {
+            return localStorage.getItem("flavormap_lang") === "tr" ? "tr" : "en";
+          } catch (e) {
+            return "en";
+          }
+        }
+
+        function setLang(lang) {
+          try {
+            localStorage.setItem("flavormap_lang", lang);
+          } catch (e) {}
+
+          document.documentElement.setAttribute("lang", lang === "tr" ? "tr" : "en");
+
+          document.querySelectorAll("[data-tr]").forEach((el) => {
+            const tr = el.getAttribute("data-tr");
+            const en = el.getAttribute("data-en");
+            const next = lang === "tr" ? (tr ?? el.textContent) : (en ?? el.textContent);
+
+            // Attribute-level translations (optional)
+            const ariaTr = el.getAttribute("data-tr-aria-label");
+            const ariaEn = el.getAttribute("data-en-aria-label");
+            if (ariaTr || ariaEn) {
+              el.setAttribute("aria-label", lang === "tr" ? (ariaTr || ariaEn || "") : (ariaEn || ariaTr || ""));
+            }
+            const titleTr = el.getAttribute("data-tr-title");
+            const titleEn = el.getAttribute("data-en-title");
+            if (titleTr || titleEn) {
+              el.setAttribute("title", lang === "tr" ? (titleTr || titleEn || "") : (titleEn || titleTr || ""));
+            }
+
+            const tag = (el.tagName || "").toUpperCase();
+            if (tag === "INPUT" || tag === "TEXTAREA") {
+              if (el.hasAttribute("placeholder")) {
+                el.setAttribute("placeholder", next);
+              }
+            } else {
+              el.textContent = next;
+            }
+          });
+
+          document.querySelectorAll(".lang-btn[data-lang]").forEach((btn) => {
+            const btnLang = btn.getAttribute("data-lang");
+            btn.setAttribute("aria-pressed", String(btnLang === lang));
+          });
+        }
+
+        (function initLang() {
+          const saved = getCurrentLang();
+          setLang(saved);
+
+          document.querySelectorAll(".lang-btn[data-lang]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const lang = btn.getAttribute("data-lang") === "tr" ? "tr" : "en";
+              setLang(lang);
+            });
+          });
+        })();
+    </script>
 </body>
 </html>

@@ -111,13 +111,13 @@
 </style>
 
 <div class="home-hero">
-    <h1>🍽️ Welcome to FlavorMap!</h1>
-    <p>Discover the best places to eat around you.</p>
-    <a href="{% url 'restaurants:list' %}" class="browse-btn">Browse All Restaurants</a>
+    <h1 data-en="🍽️ Welcome to FlavorMap!" data-tr="🍽️ FlavorMap'e Hoş Geldin!">🍽️ Welcome to FlavorMap!</h1>
+    <p data-en="Discover the best places to eat around you." data-tr="Yakınındaki en iyi yemek noktalarını keşfet.">Discover the best places to eat around you.</p>
+    <a href="{% url 'restaurants:list' %}" class="browse-btn" data-en="Browse All Restaurants" data-tr="Tüm Restoranlara Göz At">Browse All Restaurants</a>
 </div>
 
 <!-- Top Rated Section -->
-<h2 class="section-title">⭐ Top Rated</h2>
+<h2 class="section-title" data-en="⭐ Top Rated" data-tr="⭐ En Yüksek Puanlılar">⭐ Top Rated</h2>
 <div class="restaurant-grid">
     {% for restaurant in top_rated %}
         <a class="restaurant-card" href="{% url 'restaurants:detail' restaurant.id %}">
@@ -133,19 +133,19 @@
                     {% if restaurant.avg_rating %}
                         ⭐ {{ restaurant.avg_rating|floatformat:1 }} / 5
                     {% else %}
-                        No ratings yet
+                        <span data-en="No ratings yet" data-tr="Henüz puan yok">No ratings yet</span>
                     {% endif %}
                 </div>
-                <span class="card-link">View Details →</span>
+                <span class="card-link" data-en="View Details →" data-tr="Detayları Gör →">View Details →</span>
             </div>
         </a>
     {% empty %}
-        <p>No restaurants available yet.</p>
+        <p data-en="No restaurants available yet." data-tr="Henüz restoran yok.">No restaurants available yet.</p>
     {% endfor %}
 </div>
 
 <!-- Newest Section -->
-<h2 class="section-title">🆕 Newest Additions</h2>
+<h2 class="section-title" data-en="🆕 Newest Additions" data-tr="🆕 Yeni Eklenenler">🆕 Newest Additions</h2>
 <div class="restaurant-grid">
     {% for restaurant in newest %}
         <a class="restaurant-card" href="{% url 'restaurants:detail' restaurant.id %}">
@@ -160,11 +160,11 @@
                 <div class="card-rating">
                     ⭐ {{ restaurant.average_rating }} / 5
                 </div>
-                <span class="card-link">View Details →</span>
+                <span class="card-link" data-en="View Details →" data-tr="Detayları Gör →">View Details →</span>
             </div>
         </a>
     {% empty %}
-        <p>No restaurants available yet.</p>
+        <p data-en="No restaurants available yet." data-tr="Henüz restoran yok.">No restaurants available yet.</p>
     {% endfor %}
 </div>
 {% endblock %}
