@@ -67,11 +67,11 @@
   {% if can_manage_restaurant %}
   <div class="manage-bar">
     <span class="manage-bar__label">⚙️ Manage</span>
-    <a class="btn btn-blue btn-sm" href="{% url 'restaurants:edit_restaurant' restaurant.id %}" id="edit-restaurant-btn">✏️ Edit</a>
-    <a class="btn btn-danger btn-sm" href="{% url 'restaurants:delete_restaurant' restaurant.id %}" id="delete-restaurant-btn">🗑️ Delete</a>
-    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_menu_item' restaurant.id %}" id="add-menu-item-btn">➕ Menu Item</a>
-    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_opening_hours' restaurant.id %}" id="add-hours-btn">🕐 Add Hours</a>
-    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_photo' restaurant.id %}" id="add-photo-btn">📸 Add Photo</a>
+    <a class="btn btn-blue btn-sm" href="{% url 'restaurants:edit_restaurant' restaurant.id %}" id="edit-restaurant-btn">Edit</a>
+    <a class="btn btn-danger btn-sm" href="{% url 'restaurants:delete_restaurant' restaurant.id %}" id="delete-restaurant-btn">Delete</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_menu_item' restaurant.id %}" id="add-menu-item-btn">Add Menu Item</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_opening_hours' restaurant.id %}" id="add-hours-btn">Add Hours</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_photo' restaurant.id %}" id="add-photo-btn">Add Photo</a>
   </div>
   {% endif %}
 
@@ -250,11 +250,11 @@
 
       {% if user.is_authenticated and review.user == user %}
       <div class="review-actions">
-        <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_review' review.id %}">✏️ Edit</a>
+        <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_review' review.id %}">Edit</a>
         <form action="{% url 'restaurants:delete_review' review.id %}" method="post" style="display:inline;"
               onsubmit="return confirm('Delete your review?');">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+          <button type="submit" class="btn btn-danger btn-sm">Delete</button>
         </form>
       </div>
       {% endif %}
@@ -265,7 +265,7 @@
         {% for reply in review.replies.all %}
         <div class="reply-card" id="reply-{{ reply.id }}">
           <div class="reply-header">
-            <span class="reply-user">↩ {{ reply.user.username }}</span>
+            <span class="reply-user">{{ reply.user.username }}</span>
             <span class="reply-date">{{ reply.created_at|date:"F d, Y" }}</span>
           </div>
           <p class="reply-comment">{{ reply.comment }}</p>
@@ -287,7 +287,7 @@
         <form action="{% url 'restaurants:add_reply' review.id %}" method="post">
           {% csrf_token %}
           <textarea name="comment" rows="2" placeholder="Write a reply..." required></textarea>
-          <button type="submit" class="btn btn-ghost btn-sm">↩ Reply</button>
+          <button type="submit" class="btn btn-ghost btn-sm">Reply</button>
         </form>
       </div>
       {% endif %}

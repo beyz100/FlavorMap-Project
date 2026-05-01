@@ -18,10 +18,10 @@
           style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
       {% csrf_token %}
       <a href="{% url 'restaurants:detail' restaurant.id %}" class="btn btn-ghost" id="cancel-delete-btn">
-        ← Cancel
+        Cancel
       </a>
       <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
-        🗑️ Yes, delete permanently
+        Yes, delete permanently
       </button>
     </form>
   </div>
