@@ -233,23 +233,17 @@
         <span class="review-date">{{ review.created_at|date:"F d, Y" }}</span>
       </div>
 
-      <div class="review-like-box" style="margin-top:0.5rem;">
-  <span>
-    <span>
-  👍 {{ review.like_count }}
-  👎 {{ review.dislike_count }}
-</span>
-  
-  </span>
+      <p class="review-comment">{{ review.comment }}</p>
 
+      <div class="review-like-box" style="margin-top:0.5rem;">
   <form action="{% url 'restaurants:toggle_review_like' review.id %}" method="POST" style="display:inline;">
       {% csrf_token %}
-      <button type="submit" name="action" value="like">👍 Like</button>
+      <button type="submit" name="action" value="like" class="reaction-btn" aria-label="Like">👍 {{ review.like_count }}</button>
   </form>
 
   <form action="{% url 'restaurants:toggle_review_like' review.id %}" method="POST" style="display:inline;">
       {% csrf_token %}
-      <button type="submit" name="action" value="dislike">👎 Dislike</button>
+      <button type="submit" name="action" value="dislike" class="reaction-btn" aria-label="Dislike">👎 {{ review.dislike_count }}</button>
   </form>
 </div>
 
