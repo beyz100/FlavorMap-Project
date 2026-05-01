@@ -75,6 +75,11 @@ class Review(models.Model):
             )
         ]
 
+    def __str__(self):
+        if self.parent_id:
+            return f"Reply by {self.user.username} on {self.restaurant.name}"
+        return f"{self.user.username} → {self.restaurant.name} ({self.rating}/5)"
+
 class ReviewLike(models.Model):
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -84,7 +89,8 @@ class ReviewLike(models.Model):
         unique_together = ('review', 'user')
 
     def __str__(self):
-        return f"{self.restaurant.name} - {self.user.username}"
+        reaction = "like" if self.is_like else "dislike"
+        return f"{self.user.username} {reaction}d review #{self.review_id}"
 
 
 class Favorite(models.Model):
@@ -108,8 +114,13 @@ class Favorite(models.Model):
 
 class OpeningHours(models.Model):
     DAY_CHOICES = [
-        ('weekdays', 'Weekdays'),
-        ('weekends', 'Weekends'),
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
     ]
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='opening_hours')
     day = models.CharField(max_length=20, choices=DAY_CHOICES)
@@ -117,7 +128,6 @@ class OpeningHours(models.Model):
     close_time = models.TimeField()
 
     class Meta:
-        ordering = ['day']
         unique_together = ('restaurant', 'day')
 
     def __str__(self):

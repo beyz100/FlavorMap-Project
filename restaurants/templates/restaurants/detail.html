@@ -68,11 +68,7 @@
   <div class="manage-bar">
     <span class="manage-bar__label">⚙️ Manage</span>
     <a class="btn btn-blue btn-sm" href="{% url 'restaurants:edit_restaurant' restaurant.id %}" id="edit-restaurant-btn">✏️ Edit</a>
-    <form action="{% url 'restaurants:delete_restaurant' restaurant.id %}" method="post" style="display:inline;"
-          onsubmit="return confirm('Delete this restaurant? This action cannot be undone.');">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-danger btn-sm" id="delete-restaurant-btn">🗑️ Delete</button>
-    </form>
+    <a class="btn btn-danger btn-sm" href="{% url 'restaurants:delete_restaurant' restaurant.id %}" id="delete-restaurant-btn">🗑️ Delete</a>
     <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_menu_item' restaurant.id %}" id="add-menu-item-btn">➕ Menu Item</a>
     <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_opening_hours' restaurant.id %}" id="add-hours-btn">🕐 Add Hours</a>
     <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_photo' restaurant.id %}" id="add-photo-btn">📸 Add Photo</a>
@@ -122,7 +118,10 @@
       <div class="photo-gallery" style="margin-top:0.75rem;">
         {% for photo in gallery_photos %}
           <div class="photo-thumb">
-            <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Gallery photo' }}">
+            <img src="{{ photo.image.url }}"
+                 alt="{{ photo.caption|default:'Gallery photo' }}"
+                 class="lightbox-trigger"
+                 style="cursor:zoom-in;">
             {% if can_manage_restaurant %}
               <form action="{% url 'restaurants:delete_photo' photo.id %}" method="post"
                     onsubmit="return confirm('Delete this photo?');">
@@ -307,6 +306,56 @@
 
 </div>
 
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox-overlay" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
+  <button type="button" class="lightbox-close" aria-label="Close">×</button>
+  <img class="lightbox-image" src="" alt="">
+  <div class="lightbox-caption" aria-live="polite"></div>
+</div>
+
+<style>
+  .lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.88);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 2rem;
+    cursor: zoom-out;
+  }
+  .lightbox-overlay[hidden] { display: none; }
+  .lightbox-image {
+    max-width: 90vw;
+    max-height: 80vh;
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    cursor: default;
+  }
+  .lightbox-caption {
+    color: #fff;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    text-align: center;
+    max-width: 80vw;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2.5rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.25rem 0.75rem;
+  }
+  .lightbox-close:hover { color: var(--primary); }
+</style>
+
 <script>
 (function () {
   const input = document.getElementById("rating-input");
@@ -330,6 +379,39 @@
 
   document.querySelector(".star-rating")?.addEventListener("mouseleave", () => {
     paint(Number(input.value) || 0);
+  });
+})();
+
+(function () {
+  const overlay = document.getElementById("lightbox");
+  if (!overlay) return;
+  const overlayImg = overlay.querySelector(".lightbox-image");
+  const caption = overlay.querySelector(".lightbox-caption");
+  const triggers = document.querySelectorAll(".lightbox-trigger");
+  if (!triggers.length) return;
+
+  function open(img) {
+    overlayImg.src = img.src;
+    overlayImg.alt = img.alt;
+    caption.textContent = img.alt && img.alt !== "Gallery photo" ? img.alt : "";
+    overlay.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function close() {
+    overlay.hidden = true;
+    overlayImg.src = "";
+    document.body.style.overflow = "";
+  }
+
+  triggers.forEach(img => img.addEventListener("click", () => open(img)));
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlayImg) return;
+    close();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !overlay.hidden) close();
   });
 })();
 </script>
