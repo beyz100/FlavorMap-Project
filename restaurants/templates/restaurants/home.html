@@ -113,7 +113,9 @@
 <div class="home-hero">
     <h1 data-en="🍽️ Welcome to FlavorMap!" data-tr="🍽️ FlavorMap'e Hoş Geldiniz!">🍽️ Welcome to FlavorMap!</h1>
     <p data-en="Discover the best places to eat around you." data-tr="Çevrendeki en iyi yemek yerlerini keşfet.">Discover the best places to eat around you.</p>
-    <a class="browse-btn" href="{% url 'restaurants:list' %}">Browse All Restaurants</a>
+    <a class="browse-btn" href="{% url 'restaurants:list' %}"
+       data-en="Browse All Restaurants"
+       data-tr="Tüm Restoranlara Göz At">Browse All Restaurants</a>
 </div>
 
 <!-- Top Rated Section -->
@@ -140,7 +142,7 @@
             </div>
         </a>
     {% empty %}
-        <p>No restaurants available yet.</p>
+        <p data-en="No restaurants available yet." data-tr="Henüz restoran yok.">No restaurants available yet.</p>
     {% endfor %}
 </div>
 
@@ -160,11 +162,11 @@
                 <div class="card-rating">
                     ⭐ {{ restaurant.average_rating }} / 5
                 </div>
-                <span class="card-link">View Details →</span>
+                <span class="card-link" data-en="View Details →" data-tr="Detayları Gör →">View Details →</span>
             </div>
         </a>
     {% empty %}
-        <p>No restaurants available yet.</p>
+        <p data-en="No restaurants available yet." data-tr="Henüz restoran yok.">No restaurants available yet.</p>
     {% endfor %}
 </div>
 {% endblock %}

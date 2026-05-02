@@ -61,11 +61,11 @@
   {% if can_manage_restaurant %}
   <div class="manage-bar">
     <span class="manage-bar__label" data-en="Manage" data-tr="Yönet">Manage</span>
-    <a class="btn btn-blue btn-sm" href="{% url 'restaurants:edit_restaurant' restaurant.id %}">Edit</a>
-    <a class="btn btn-danger btn-sm" href="{% url 'restaurants:delete_restaurant' restaurant.id %}">Delete</a>
-    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_menu_item' restaurant.id %}">Add Menu Item</a>
-    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_opening_hours' restaurant.id %}">Add Hours</a>
-    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_photo' restaurant.id %}">Add Photo</a>
+    <a class="btn btn-blue btn-sm" href="{% url 'restaurants:edit_restaurant' restaurant.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
+    <a class="btn btn-danger btn-sm" href="{% url 'restaurants:delete_restaurant' restaurant.id %}" data-en="Delete" data-tr="Sil">Delete</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_menu_item' restaurant.id %}" data-en="Add Menu Item" data-tr="Menü Öğesi Ekle">Add Menu Item</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_opening_hours' restaurant.id %}" data-en="Add Hours" data-tr="Saat Ekle">Add Hours</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_photo' restaurant.id %}" data-en="Add Photo" data-tr="Fotoğraf Ekle">Add Photo</a>
   </div>
   {% endif %}
 
@@ -80,11 +80,11 @@
           <td>{{ hours.open_time|time:"H:i" }} – {{ hours.close_time|time:"H:i" }}</td>
           {% if can_manage_restaurant %}
           <td style="text-align:right;">
-            <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_opening_hours' hours.id %}">Edit</a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_opening_hours' hours.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
             <form action="{% url 'restaurants:delete_opening_hours' hours.id %}" method="post" style="display:inline;"
                   onsubmit="return confirm('Delete these opening hours?');">
               {% csrf_token %}
-              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+              <button type="submit" class="btn btn-danger btn-sm" data-en="Delete" data-tr="Sil">Delete</button>
             </form>
           </td>
           {% endif %}
@@ -98,7 +98,7 @@
         <div class="empty-state__title" data-en="No hours listed" data-tr="Saat yok">No hours listed</div>
         <div class="empty-state__desc" data-en="Opening hours have not been added yet." data-tr="Çalışma saatleri henüz eklenmedi.">Opening hours have not been added yet.</div>
         {% if can_manage_restaurant %}
-          <a href="{% url 'restaurants:add_opening_hours' restaurant.id %}" class="btn btn-outline btn-sm mt-1">+ Add Opening Hours</a>
+          <a href="{% url 'restaurants:add_opening_hours' restaurant.id %}" class="btn btn-outline btn-sm mt-1" data-en="+ Add Opening Hours" data-tr="+ Çalışma Saati Ekle">+ Add Opening Hours</a>
         {% endif %}
       </div>
     {% endif %}
@@ -118,7 +118,7 @@
               <form action="{% url 'restaurants:delete_photo' photo.id %}" method="post"
                     onsubmit="return confirm('Delete this photo?');">
                 {% csrf_token %}
-                <button type="submit" class="photo-thumb__del" title="Delete photo">✕</button>
+                <button type="submit" class="photo-thumb__del" title="Delete photo" data-en-title="Delete photo" data-tr-title="Fotoğrafı sil">✕</button>
               </form>
             {% endif %}
           </div>
@@ -141,9 +141,9 @@
             {% if item.description %}<small>{{ item.description }}</small>{% endif %}
             {% if can_manage_restaurant %}
               <div class="menu-item-actions">
-                <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_menu_item' item.id %}">Edit</a>
+                <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_menu_item' item.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
                 <a class="btn btn-danger btn-sm" href="{% url 'restaurants:delete_menu_item' item.id %}"
-                   onclick="return confirm('Delete {{ item.name }}?');">Delete</a>
+                   onclick="return confirm('Delete {{ item.name }}?');" data-en="Delete" data-tr="Sil">Delete</a>
               </div>
             {% endif %}
           </div>
@@ -157,7 +157,7 @@
         <div class="empty-state__title" data-en="Menu not available" data-tr="Menü yok">Menu not available</div>
         <div class="empty-state__desc" data-en="No menu items yet." data-tr="Henüz menü öğesi yok.">No menu items yet.</div>
         {% if can_manage_restaurant %}
-          <a href="{% url 'restaurants:add_menu_item' restaurant.id %}" class="btn btn-outline btn-sm mt-1">+ Add Menu Item</a>
+          <a href="{% url 'restaurants:add_menu_item' restaurant.id %}" class="btn btn-outline btn-sm mt-1" data-en="+ Add Menu Item" data-tr="+ Menü Öğesi Ekle">+ Add Menu Item</a>
         {% endif %}
       </div>
     {% endif %}
@@ -169,17 +169,19 @@
     <form class="fm-form" action="{% url 'restaurants:add_review' restaurant.id %}" method="post" style="margin-top:0.75rem;">
       {% csrf_token %}
       <label for="rating-input" data-en="Your Rating" data-tr="Puanınız">Your Rating</label>
-      <div class="star-rating" role="group" aria-label="Select rating">
-        <button type="button" class="star-btn" data-value="1" aria-label="Rate 1 star">★</button>
-        <button type="button" class="star-btn" data-value="2" aria-label="Rate 2 stars">★</button>
-        <button type="button" class="star-btn" data-value="3" aria-label="Rate 3 stars">★</button>
-        <button type="button" class="star-btn" data-value="4" aria-label="Rate 4 stars">★</button>
-        <button type="button" class="star-btn" data-value="5" aria-label="Rate 5 stars">★</button>
+      <div class="star-rating" role="group" aria-label="Select rating" data-en-aria="Select rating" data-tr-aria="Puan seçin">
+        <button type="button" class="star-btn" data-value="1" aria-label="Rate 1 star" data-en-aria="Rate 1 star" data-tr-aria="1 yıldız ver">★</button>
+        <button type="button" class="star-btn" data-value="2" aria-label="Rate 2 stars" data-en-aria="Rate 2 stars" data-tr-aria="2 yıldız ver">★</button>
+        <button type="button" class="star-btn" data-value="3" aria-label="Rate 3 stars" data-en-aria="Rate 3 stars" data-tr-aria="3 yıldız ver">★</button>
+        <button type="button" class="star-btn" data-value="4" aria-label="Rate 4 stars" data-en-aria="Rate 4 stars" data-tr-aria="4 yıldız ver">★</button>
+        <button type="button" class="star-btn" data-value="5" aria-label="Rate 5 stars" data-en-aria="Rate 5 stars" data-tr-aria="5 yıldız ver">★</button>
       </div>
       <input type="hidden" name="rating" id="rating-input" required>
 
       <label for="id_comment" data-en="Your Comment" data-tr="Yorumunuz">Your Comment</label>
-      <textarea name="comment" id="id_comment" rows="4" required placeholder="Share your experience..."></textarea>
+      <textarea name="comment" id="id_comment" rows="4" required placeholder="Share your experience..."
+                data-en-placeholder="Share your experience..."
+                data-tr-placeholder="Deneyimini paylaş..."></textarea>
 
       <button type="submit" class="btn btn-primary" data-en="Submit Review" data-tr="Gönder">Submit Review</button>
     </form>
@@ -213,21 +215,21 @@
       <div class="review-like-box" style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
         <form action="{% url 'restaurants:toggle_review_like' review.id %}" method="post" style="display:inline;">
           {% csrf_token %}
-          <button type="submit" name="action" value="like" class="reaction-btn" aria-label="Like">👍 {{ review.like_count }}</button>
+          <button type="submit" name="action" value="like" class="reaction-btn" aria-label="Like" data-en-aria="Like" data-tr-aria="Beğen">👍 {{ review.like_count }}</button>
         </form>
         <form action="{% url 'restaurants:toggle_review_like' review.id %}" method="post" style="display:inline;">
           {% csrf_token %}
-          <button type="submit" name="action" value="dislike" class="reaction-btn" aria-label="Dislike">👎 {{ review.dislike_count }}</button>
+          <button type="submit" name="action" value="dislike" class="reaction-btn" aria-label="Dislike" data-en-aria="Dislike" data-tr-aria="Beğenme">👎 {{ review.dislike_count }}</button>
         </form>
       </div>
 
       {% if user.is_authenticated and review.user == user %}
       <div class="review-actions">
-        <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_review' review.id %}">Edit</a>
+        <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_review' review.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
         <form action="{% url 'restaurants:delete_review' review.id %}" method="post" style="display:inline;"
               onsubmit="return confirm('Delete your review?');">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          <button type="submit" class="btn btn-danger btn-sm" data-en="Delete" data-tr="Sil">Delete</button>
         </form>
       </div>
       {% endif %}
@@ -245,7 +247,7 @@
           <form action="{% url 'restaurants:delete_review' reply.id %}" method="post" style="margin-top:0.3rem;"
                 onsubmit="return confirm('Delete this reply?');">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger btn-sm">Delete Reply</button>
+            <button type="submit" class="btn btn-danger btn-sm" data-en="Delete Reply" data-tr="Yanıtı Sil">Delete Reply</button>
           </form>
           {% endif %}
         </div>
@@ -257,8 +259,10 @@
       <div class="reply-form">
         <form action="{% url 'restaurants:add_reply' review.id %}" method="post">
           {% csrf_token %}
-          <textarea name="comment" rows="2" placeholder="Write a reply..." required></textarea>
-          <button type="submit" class="btn btn-ghost btn-sm">Reply</button>
+          <textarea name="comment" rows="2" placeholder="Write a reply..." required
+                    data-en-placeholder="Write a reply..."
+                    data-tr-placeholder="Yanıt yaz..."></textarea>
+          <button type="submit" class="btn btn-ghost btn-sm" data-en="Reply" data-tr="Yanıtla">Reply</button>
         </form>
       </div>
       {% endif %}
@@ -272,8 +276,8 @@
 
 </div>
 
-<div id="lightbox" class="lightbox-overlay" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
-  <button type="button" class="lightbox-close" aria-label="Close">×</button>
+<div id="lightbox" class="lightbox-overlay" role="dialog" aria-modal="true" aria-label="Photo viewer" data-en-aria="Photo viewer" data-tr-aria="Fotoğraf görüntüleyici" hidden>
+  <button type="button" class="lightbox-close" aria-label="Close" data-en-aria="Close" data-tr-aria="Kapat">×</button>
   <img class="lightbox-image" src="" alt="">
   <div class="lightbox-caption" aria-live="polite"></div>
 </div>

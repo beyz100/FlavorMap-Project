@@ -4,9 +4,9 @@
 {% block content %}
 <div class="page-container page-container--narrow">
   <div class="section-card">
-    <span class="section-card__title">✏️ Edit Your Review</span>
+    <span class="section-card__title" data-en="✏️ Edit Your Review" data-tr="✏️ Yorumunu Düzenle">✏️ Edit Your Review</span>
     <p style="color:var(--text-light); font-size:0.88rem; margin-bottom:1rem;">
-      Reviewing: <a href="{% url 'restaurants:detail' review.restaurant.id %}"
+      <span data-en="Reviewing:" data-tr="Restoran:">Reviewing:</span> <a href="{% url 'restaurants:detail' review.restaurant.id %}"
         style="color:var(--primary); font-weight:600;">{{ review.restaurant.name }}</a>
     </p>
     <form class="fm-form" method="post">
@@ -21,8 +21,8 @@
         {% endif %}
       {% endfor %}
       <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-        <button type="submit" class="btn btn-primary" id="save-review-btn">Save Changes</button>
-        <a href="{% url 'restaurants:detail' review.restaurant.id %}" class="btn btn-ghost" id="cancel-edit-btn">Cancel</a>
+        <button type="submit" class="btn btn-primary" id="save-review-btn" data-en="Save Changes" data-tr="Değişiklikleri Kaydet">Save Changes</button>
+        <a href="{% url 'restaurants:detail' review.restaurant.id %}" class="btn btn-ghost" id="cancel-edit-btn" data-en="Cancel" data-tr="İptal">Cancel</a>
       </div>
     </form>
   </div>

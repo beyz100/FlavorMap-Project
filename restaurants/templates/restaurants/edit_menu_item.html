@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-container page-container--narrow">
   <div class="section-card">
-    <span class="section-card__title">✏️ Edit Menu Item</span>
+    <span class="section-card__title" data-en="✏️ Edit Menu Item" data-tr="✏️ Menü Öğesini Düzenle">✏️ Edit Menu Item</span>
     <p style="color:var(--text-light); font-size:0.88rem; margin-bottom:1rem;">{{ menu_item.name }}</p>
     <form class="fm-form" method="post">
       {% csrf_token %}
@@ -16,8 +16,8 @@
         {% endfor %}
       {% endfor %}
       <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;">
-        <button type="submit" class="btn btn-primary" id="save-menu-item-btn">Save Changes</button>
-        <a href="{% url 'restaurants:detail' menu_item.restaurant.id %}" class="btn btn-ghost" id="cancel-edit-item-btn">Cancel</a>
+        <button type="submit" class="btn btn-primary" id="save-menu-item-btn" data-en="Save Changes" data-tr="Değişiklikleri Kaydet">Save Changes</button>
+        <a href="{% url 'restaurants:detail' menu_item.restaurant.id %}" class="btn btn-ghost" id="cancel-edit-item-btn" data-en="Cancel" data-tr="İptal">Cancel</a>
       </div>
     </form>
   </div>

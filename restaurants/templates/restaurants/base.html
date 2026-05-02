@@ -12,7 +12,7 @@
 </head>
 <body>
 
-  <nav class="fm-nav" role="navigation" aria-label="Main navigation">
+  <nav class="fm-nav" role="navigation" aria-label="Main navigation" data-en-aria="Main navigation" data-tr-aria="Ana menü">
     <div class="fm-nav__inner">
       <a href="{% url 'restaurants:home' %}" class="fm-nav__logo">🍽️ FlavorMap</a>
       <div class="fm-nav__links">
@@ -55,7 +55,7 @@
   </main>
 
   <footer class="fm-footer">
-    <p>© 2026 FlavorMap — Discover great food near you 🍴</p>
+    <p data-en="© 2026 FlavorMap — Discover great food near you 🍴" data-tr="© 2026 FlavorMap — Yakınınızdaki lezzetleri keşfedin 🍴">© 2026 FlavorMap — Discover great food near you 🍴</p>
   </footer>
 
   <script>
@@ -64,12 +64,48 @@
         localStorage.setItem("flavormap_lang", lang);
       } catch (e) {}
 
-      document.documentElement.setAttribute("lang", lang === "tr" ? "tr" : "en");
+      const isTr = lang === "tr";
+      document.documentElement.setAttribute("lang", isTr ? "tr" : "en");
+
+      function pick(en, tr, fallback) {
+        if (isTr) return (tr != null && tr !== "") ? tr : (fallback || "");
+        return (en != null && en !== "") ? en : (fallback || "");
+      }
 
       document.querySelectorAll("[data-tr]").forEach((el) => {
         const tr = el.getAttribute("data-tr");
         const en = el.getAttribute("data-en");
-        el.textContent = lang === "tr" ? (tr ?? el.textContent) : (en ?? el.textContent);
+        const text = pick(en, tr, el.textContent);
+        const tag = el.tagName;
+        if (tag === "OPTION") {
+          el.textContent = text;
+        } else if (tag === "INPUT") {
+          const type = (el.type || "").toLowerCase();
+          if (type === "submit" || type === "button" || type === "reset") {
+            el.value = text;
+          }
+        } else {
+          el.textContent = text;
+        }
+      });
+
+      document.querySelectorAll("[data-tr-placeholder]").forEach((el) => {
+        const tr = el.getAttribute("data-tr-placeholder");
+        const en = el.getAttribute("data-en-placeholder");
+        el.placeholder = pick(en, tr, el.placeholder);
+      });
+
+      document.querySelectorAll("[data-tr-title]").forEach((el) => {
+        const tr = el.getAttribute("data-tr-title");
+        const en = el.getAttribute("data-en-title");
+        el.title = pick(en, tr, el.title);
+      });
+
+      document.querySelectorAll("[data-tr-aria]").forEach((el) => {
+        const tr = el.getAttribute("data-tr-aria");
+        const en = el.getAttribute("data-en-aria");
+        const v = pick(en, tr, el.getAttribute("aria-label") || "");
+        if (v) el.setAttribute("aria-label", v);
       });
     }
 

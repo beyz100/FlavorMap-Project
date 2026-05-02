@@ -129,20 +129,68 @@
 
 <body>
 
+<div style="position:fixed; top:12px; right:12px; display:flex; gap:6px; z-index:10;">
+    <button type="button" style="padding:6px 12px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; font-weight:600;" onclick="setLang('tr')">TR</button>
+    <button type="button" style="padding:6px 12px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; font-weight:600;" onclick="setLang('en')">ENG</button>
+</div>
+
 <div class="register-box">
-    <h2>Register</h2>
+    <h2 data-en="Register" data-tr="Kayıt Ol">Register</h2>
 
     <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
 
-        <button type="submit">Register</button>
+        <button type="submit" data-en="Register" data-tr="Kayıt Ol">Register</button>
     </form>
 
     <div class="login-link">
-        <p>Already have an account? <a href="/login/">Login</a></p>
+        <p><span data-en="Already have an account?" data-tr="Zaten hesabın var mı?">Already have an account?</span> <a href="/login/" data-en="Login" data-tr="Giriş Yap">Login</a></p>
     </div>
 </div>
 
+<script>
+function setLang(lang) {
+  try { localStorage.setItem("flavormap_lang", lang); } catch (e) {}
+  const isTr = lang === "tr";
+  document.documentElement.setAttribute("lang", isTr ? "tr" : "en");
+  function pick(en, tr, fallback) {
+    if (isTr) return (tr != null && tr !== "") ? tr : (fallback || "");
+    return (en != null && en !== "") ? en : (fallback || "");
+  }
+  document.querySelectorAll("[data-tr]").forEach((el) => {
+    const tr = el.getAttribute("data-tr");
+    const en = el.getAttribute("data-en");
+    const text = pick(en, tr, el.textContent);
+    const tag = el.tagName;
+    if (tag === "OPTION") el.textContent = text;
+    else if (tag === "INPUT") {
+      const type = (el.type || "").toLowerCase();
+      if (type === "submit" || type === "button" || type === "reset") el.value = text;
+    } else el.textContent = text;
+  });
+  document.querySelectorAll("[data-tr-placeholder]").forEach((el) => {
+    const tr = el.getAttribute("data-tr-placeholder");
+    const en = el.getAttribute("data-en-placeholder");
+    el.placeholder = pick(en, tr, el.placeholder);
+  });
+  document.querySelectorAll("[data-tr-title]").forEach((el) => {
+    const tr = el.getAttribute("data-tr-title");
+    const en = el.getAttribute("data-en-title");
+    el.title = pick(en, tr, el.title);
+  });
+  document.querySelectorAll("[data-tr-aria]").forEach((el) => {
+    const tr = el.getAttribute("data-tr-aria");
+    const en = el.getAttribute("data-en-aria");
+    const v = pick(en, tr, el.getAttribute("aria-label") || "");
+    if (v) el.setAttribute("aria-label", v);
+  });
+}
+(function () {
+  let saved = "en";
+  try { saved = localStorage.getItem("flavormap_lang") || "en"; } catch (e) {}
+  setLang(saved === "tr" ? "tr" : "en");
+})();
+</script>
 </body>
 </html>
