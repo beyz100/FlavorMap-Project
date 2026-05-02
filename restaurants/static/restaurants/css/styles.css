@@ -820,3 +820,62 @@ img { display: block; max-width: 100%; }
   .filter-bar { flex-direction: column; }
   .filter-bar input, .filter-bar select { max-width: 100%; }
 }
+
+/* ---------- Review reactions ---------- */
+.reaction-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+.reaction-btn:hover {
+  background: var(--bg);
+  border-color: var(--primary);
+}
+
+/* ---------- Lightbox (gallery) ---------- */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 2rem;
+  cursor: zoom-out;
+}
+.lightbox-overlay[hidden] { display: none; }
+.lightbox-image {
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  cursor: default;
+}
+.lightbox-caption {
+  color: #fff;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  text-align: center;
+  max-width: 80vw;
+}
+.lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem 0.75rem;
+}
+.lightbox-close:hover { color: var(--primary); }

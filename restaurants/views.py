@@ -3,8 +3,17 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-from django.db.models import Avg, Q
+from django.db.models import Avg, Case, IntegerField, Q, When
 from django.db import transaction
+
+
+DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+DAY_ORDER_EXPR = Case(
+    *[When(day=d, then=i) for i, d in enumerate(DAY_ORDER)],
+    output_field=IntegerField(),
+)
+
+from users.models import UserProfile
 
 from .forms import MenuItemForm, OpeningHoursForm, ReplyForm, RestaurantForm, ReviewForm, RestaurantPhotoForm
 from .models import Category, Favorite, Location, OpeningHours, Restaurant, Review, MenuItem, RestaurantPhoto, ReviewLike
@@ -88,7 +97,9 @@ def restaurant_detail(request, id):
     reviews = sorted(reviews, key=lambda x: x.like_count, reverse=True)
 
     review_form = ReviewForm()
-    opening_hours = restaurant.opening_hours.all()
+    opening_hours = restaurant.opening_hours.annotate(
+        _day_order=DAY_ORDER_EXPR
+    ).order_by('_day_order')
     gallery_photos = restaurant.gallery_photos.all()
 
     is_favorite = False
@@ -125,6 +136,18 @@ def contact(request):
 
 @login_required
 def user_profile(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        bio = request.POST.get("bio", "").strip()
+        if len(bio) > 500:
+            messages.error(request, "Bio is too long (max 500 characters).")
+        else:
+            profile.bio = bio
+            profile.save()
+            messages.success(request, "Bio updated.")
+        return redirect("restaurants:profile")
+
     reviews = request.user.review_set.select_related("restaurant").order_by(
         "-created_at"
     )
@@ -134,7 +157,7 @@ def user_profile(request):
     return render(
         request,
         "restaurants/profile.html",
-        {"reviews": reviews, "favorites": favorites},
+        {"reviews": reviews, "favorites": favorites, "profile": profile},
     )
 
 
@@ -289,7 +312,6 @@ def edit_restaurant(request, id):
 
 
 @login_required
-@require_POST
 def delete_restaurant(request, id):
     restaurant = get_object_or_404(Restaurant, id=id)
 
@@ -300,9 +322,16 @@ def delete_restaurant(request, id):
         )
         return redirect("restaurants:detail", id=id)
 
-    restaurant.delete()
-    messages.success(request, "Restaurant removed.")
-    return redirect("restaurants:list")
+    if request.method == "POST":
+        restaurant.delete()
+        messages.success(request, "Restaurant removed.")
+        return redirect("restaurants:list")
+
+    return render(
+        request,
+        "restaurants/delete_restaurant_confirm.html",
+        {"restaurant": restaurant},
+    )
 
 
 @login_required
