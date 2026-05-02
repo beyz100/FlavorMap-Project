@@ -3,11 +3,20 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-from django.db.models import Avg
+from django.db.models import Avg, Case, IntegerField, Q, When
 from django.db import transaction
 
-from .forms import MenuItemForm, OpeningHoursForm, ReplyForm, RestaurantForm, ReviewForm
-from .models import Category, Favorite, Location, OpeningHours, Restaurant, Review, MenuItem
+
+DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+DAY_ORDER_EXPR = Case(
+    *[When(day=d, then=i) for i, d in enumerate(DAY_ORDER)],
+    output_field=IntegerField(),
+)
+
+from users.models import UserProfile
+
+from .forms import MenuItemForm, OpeningHoursForm, ReplyForm, RestaurantForm, ReviewForm, RestaurantPhotoForm
+from .models import Category, Favorite, Location, OpeningHours, Restaurant, Review, MenuItem, RestaurantPhoto, ReviewLike
 
 
 def _user_owns_restaurant(user, restaurant):
@@ -40,8 +49,14 @@ def restaurant_list(request):
         annotated_avg_rating=Avg('reviews__rating')
     )
 
+    sort = request.GET.get("sort")
+
     if query:
-        restaurants = restaurants.filter(name__icontains=query)
+        restaurants = restaurants.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query) |
+            Q(location__name__icontains=query)
+        )
 
     if category:
         restaurants = restaurants.filter(category_id=category)
@@ -51,6 +66,9 @@ def restaurant_list(request):
 
     if price:
         restaurants = restaurants.filter(price_range=price)
+
+    if sort == "rating":
+        restaurants = restaurants.order_by("-annotated_avg_rating")
 
     categories = Category.objects.all()
     locations = Location.objects.all()
@@ -66,15 +84,31 @@ def restaurant_detail(request, id):
     restaurant = get_object_or_404(Restaurant, id=id)
 
     menu_items = restaurant.menu_items.all()
-    reviews = restaurant.reviews.filter(parent__isnull=True).order_by("-created_at")
+    reviews = list(
+    restaurant.reviews.filter(parent__isnull=True)
+)
+        
+    
+
+    for review in reviews:
+        review.like_count = review.likes.filter(is_like=True).count()
+        review.dislike_count = review.likes.filter(is_like=False).count()
+        
+    reviews = sorted(reviews, key=lambda x: x.like_count, reverse=True)
+
     review_form = ReviewForm()
-    opening_hours = restaurant.opening_hours.all()
+    opening_hours = restaurant.opening_hours.annotate(
+        _day_order=DAY_ORDER_EXPR
+    ).order_by('_day_order')
+    gallery_photos = restaurant.gallery_photos.all()
 
     is_favorite = False
     can_manage_restaurant = False
+
     if request.user.is_authenticated:
         is_favorite = Favorite.objects.filter(
-            user=request.user, restaurant=restaurant
+            user=request.user,
+            restaurant=restaurant
         ).exists()
         can_manage_restaurant = _user_owns_restaurant(request.user, restaurant)
 
@@ -82,11 +116,13 @@ def restaurant_detail(request, id):
         "restaurant": restaurant,
         "menu_items": menu_items,
         "opening_hours": opening_hours,
+        "gallery_photos": gallery_photos,
         "reviews": reviews,
         "is_favorite": is_favorite,
         "can_manage_restaurant": can_manage_restaurant,
         "review_form": review_form,
     }
+
     return render(request, "restaurants/detail.html", context)
 
 
@@ -100,6 +136,18 @@ def contact(request):
 
 @login_required
 def user_profile(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        bio = request.POST.get("bio", "").strip()
+        if len(bio) > 500:
+            messages.error(request, "Bio is too long (max 500 characters).")
+        else:
+            profile.bio = bio
+            profile.save()
+            messages.success(request, "Bio updated.")
+        return redirect("restaurants:profile")
+
     reviews = request.user.review_set.select_related("restaurant").order_by(
         "-created_at"
     )
@@ -109,7 +157,7 @@ def user_profile(request):
     return render(
         request,
         "restaurants/profile.html",
-        {"reviews": reviews, "favorites": favorites},
+        {"reviews": reviews, "favorites": favorites, "profile": profile},
     )
 
 
@@ -220,9 +268,9 @@ def toggle_favorite(request, id):
     )
     if not created:
         favorite.delete()
-        messages.success(request, "Removed from your favorites.")
+        messages.success(request, "Restaurant removed from favorites.")
     else:
-        messages.success(request, "Saved to your favorites.")
+        messages.success(request, "Restaurant set as favorite.")
     return redirect("restaurants:detail", id=id)
 
 
@@ -264,7 +312,6 @@ def edit_restaurant(request, id):
 
 
 @login_required
-@require_POST
 def delete_restaurant(request, id):
     restaurant = get_object_or_404(Restaurant, id=id)
 
@@ -275,9 +322,16 @@ def delete_restaurant(request, id):
         )
         return redirect("restaurants:detail", id=id)
 
-    restaurant.delete()
-    messages.success(request, "Restaurant removed.")
-    return redirect("restaurants:list")
+    if request.method == "POST":
+        restaurant.delete()
+        messages.success(request, "Restaurant removed.")
+        return redirect("restaurants:list")
+
+    return render(
+        request,
+        "restaurants/delete_restaurant_confirm.html",
+        {"restaurant": restaurant},
+    )
 
 
 @login_required
@@ -410,3 +464,77 @@ def delete_opening_hours(request, id):
     opening_hours.delete()
     messages.success(request, "Opening hours removed.")
     return redirect("restaurants:detail", id=restaurant.id)
+
+@login_required
+def add_photo(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(request, "You can only add photos to restaurants you created.")
+        return redirect("restaurants:detail", id=restaurant.id)
+
+    if request.method == "POST":
+        form = RestaurantPhotoForm(request.POST, request.FILES)
+        if form.is_valid():
+            photo = form.save(commit=False)
+            photo.restaurant = restaurant
+            photo.save()
+            messages.success(request, "Photo added to gallery.")
+            return redirect("restaurants:detail", id=restaurant.id)
+    else:
+        form = RestaurantPhotoForm()
+
+    return render(request, "restaurants/add_photo.html", {"form": form, "restaurant": restaurant})
+
+@login_required
+@require_POST
+def delete_photo(request, id):
+    photo = get_object_or_404(RestaurantPhoto, id=id)
+    restaurant = photo.restaurant
+
+    if not _user_owns_restaurant(request.user, restaurant):
+        messages.error(request, "You can only delete photos of restaurants you created.")
+        return redirect("restaurants:detail", id=restaurant.id)
+
+    photo.delete()
+    messages.success(request, "Photo removed from gallery.")
+    return redirect("restaurants:detail", id=restaurant.id)
+
+@login_required
+@require_POST
+def toggle_review_like(request, id):
+    review = get_object_or_404(Review, id=id, parent__isnull=True)
+    action = request.POST.get("action")
+
+    if review.user == request.user:
+        messages.error(request, "You cannot like your own review.")
+        return redirect("restaurants:detail", id=review.restaurant.id)
+
+    if action not in ["like", "dislike"]:
+        messages.error(request, "Invalid reaction.")
+        return redirect("restaurants:detail", id=review.restaurant.id)
+
+    is_like_value = action == "like"
+
+    existing_reaction = ReviewLike.objects.filter(
+        review=review,
+        user=request.user
+    ).first()
+
+    if existing_reaction:
+        if existing_reaction.is_like == is_like_value:
+            existing_reaction.delete()
+            messages.success(request, "Reaction removed.")
+        else:
+            existing_reaction.is_like = is_like_value
+            existing_reaction.save()
+            messages.success(request, "Reaction updated.")
+    else:
+        ReviewLike.objects.create(
+            review=review,
+            user=request.user,
+            is_like=is_like_value
+        )
+        messages.success(request, "Reaction added.")
+
+    return redirect("restaurants:detail", id=review.restaurant.id)

@@ -32,4 +32,7 @@ urlpatterns = [
     path('restaurants/<int:restaurant_id>/opening-hours/add/', views.add_opening_hours, name='add_opening_hours'),
     path('opening-hours/<int:id>/edit/', views.edit_opening_hours, name='edit_opening_hours'),
     path('opening-hours/<int:id>/delete/', views.delete_opening_hours, name='delete_opening_hours'),
+    path('restaurants/<int:restaurant_id>/photos/add/', views.add_photo, name='add_photo'),
+    path('photos/<int:id>/delete/', views.delete_photo, name='delete_photo'),
+    path('review/<int:id>/like/', views.toggle_review_like, name='toggle_review_like'),
 ]

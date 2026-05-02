@@ -1,536 +1,343 @@
 {% extends 'restaurants/base.html' %}
+{% block title %}{{ restaurant.name }} – FlavorMap{% endblock %}
+{% block meta_description %}{{ restaurant.description|truncatewords:40 }}{% endblock %}
 
 {% block content %}
-<style>
-    .detail-wrapper {
-        max-width: 860px;
-        margin: 0 auto;
-    }
-    .detail-header {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    .detail-photo {
-        width: 100%;
-        max-height: 380px;
-        object-fit: cover;
-        border-radius: 12px;
-    }
-    .detail-title {
-        font-size: 2rem;
-        font-weight: 800;
-        margin: 0;
-    }
-    .detail-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        font-size: 0.9rem;
-        color: #555;
-    }
-    .badge {
-        background: #f5f5f5;
-        border: 1px solid #ddd;
-        border-radius: 20px;
-        padding: 0.25rem 0.75rem;
-        font-size: 0.85rem;
-    }
-    .section-card {
-        background: #fff;
-        border: 1px solid #e8e8e8;
-        border-radius: 10px;
-        padding: 1.25rem 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    }
-    .section-card h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1.15rem;
-        font-weight: 700;
-        border-bottom: 2px solid #ff6b35;
-        padding-bottom: 0.4rem;
-        display: inline-block;
-    }
-    /* Opening Hours */
-    .hours-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9rem;
-    }
-    .hours-table td {
-        padding: 0.4rem 0.75rem;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .hours-table td:first-child {
-        font-weight: 600;
-        color: #333;
-        width: 120px;
-    }
-    /* Menu */
-    .menu-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    .menu-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        background: #fafafa;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-    }
-    .menu-item-info strong {
-        font-size: 1rem;
-    }
-    .menu-item-info small {
-        display: block;
-        color: #777;
-        margin-top: 2px;
-    }
-    .menu-item-price {
-        font-weight: 700;
-        color: #ff6b35;
-        white-space: nowrap;
-        margin-left: 1rem;
-    }
-    .menu-item-actions {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 0.4rem;
-    }
-    .btn-sm {
-        padding: 0.25rem 0.6rem;
-        font-size: 0.8rem;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        background: #eee;
-        color: #333;
-        text-decoration: none;
-    }
-    .btn-sm:hover { background: #ddd; }
-    .btn-danger { background: #ffe0e0; color: #c00; }
-    .btn-danger:hover { background: #fcc; }
-    /* Favorite */
-    .btn-fav {
-        padding: 0.5rem 1.25rem;
-        border: 2px solid #ff6b35;
-        border-radius: 8px;
-        background: transparent;
-        color: #ff6b35;
-        font-weight: 600;
-        cursor: pointer;
-        font-size: 0.95rem;
-        transition: background 0.2s, color 0.2s;
-    }
-    .btn-fav:hover { background: #ff6b35; color: #fff; }
-    .btn-fav.active { background: #ff6b35; color: #fff; }
-    /* Reviews */
-    .review-card {
-        border: 1px solid #eee;
-        border-radius: 10px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        background: #fafafa;
-    }
-    .review-header {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    .review-user {
-        font-weight: 700;
-        font-size: 0.95rem;
-    }
-    .review-rating {
-        color: #ff9900;
-        font-size: 0.9rem;
-    }
-    .review-date {
-        font-size: 0.78rem;
-        color: #999;
-        margin-left: auto;
-    }
-    .review-comment {
-        margin: 0.4rem 0;
-        font-size: 0.95rem;
-        color: #333;
-    }
-    .review-actions {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
-    }
-    /* Replies */
-    .replies-section {
-        margin-top: 0.75rem;
-        padding-left: 1rem;
-        border-left: 3px solid #ffcc99;
-    }
-    .reply-card {
-        background: #fff;
-        border: 1px solid #f0e8d8;
-        border-radius: 8px;
-        padding: 0.6rem 0.9rem;
-        margin-bottom: 0.5rem;
-    }
-    .reply-header {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        margin-bottom: 0.3rem;
-    }
-    .reply-user {
-        font-weight: 600;
-        font-size: 0.88rem;
-        color: #444;
-    }
-    .reply-date {
-        font-size: 0.75rem;
-        color: #aaa;
-        margin-left: auto;
-    }
-    .reply-comment {
-        font-size: 0.9rem;
-        color: #555;
-        margin: 0;
-    }
-    /* Reply form */
-    .reply-form {
-        margin-top: 0.75rem;
-    }
-    .reply-form textarea {
-        width: 100%;
-        box-sizing: border-box;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 0.5rem;
-        font-size: 0.88rem;
-        resize: vertical;
-    }
-    .reply-form button {
-        margin-top: 0.4rem;
-        padding: 0.35rem 1rem;
-        background: #ff6b35;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 0.85rem;
-    }
-    .reply-form button:hover { background: #e05520; }
-    /* Review form */
-    .review-form label { font-weight: 600; font-size: 0.9rem; }
-    .review-form select,
-    .review-form textarea {
-        width: 100%;
-        box-sizing: border-box;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.9rem;
-        margin-top: 0.25rem;
-        margin-bottom: 0.75rem;
-    }
-    .btn-primary {
-        padding: 0.55rem 1.5rem;
-        background: #ff6b35;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        cursor: pointer;
-    }
-    .btn-primary:hover { background: #e05520; }
-    .manage-bar {
-        display: flex;
-        gap: 0.75rem;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-bottom: 1.25rem;
-    }
-    .btn-edit {
-        padding: 0.45rem 1.1rem;
-        background: #4a90e2;
-        color: #fff;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    .btn-edit:hover { background: #357abd; }
-    .btn-delete {
-        padding: 0.45rem 1.1rem;
-        background: #e74c3c;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    .btn-delete:hover { background: #c0392b; }
-    .back-link {
-        display: inline-block;
-        margin-top: 1rem;
-        color: #ff6b35;
-        font-weight: 600;
-        text-decoration: none;
-    }
-    .back-link:hover { text-decoration: underline; }
-    /* Star rating */
-    .star-rating {
-        display: inline-flex;
-        gap: 0.25rem;
-        align-items: center;
-        margin: 0.25rem 0 0.75rem 0;
-    }
-    .star-btn {
-        border: none;
-        background: none;
-        font-size: 30px;
-        cursor: pointer;
-        color: #b5b5b5;
-        padding: 0;
-        line-height: 1;
-    }
-    .star-btn.active {
-        color: #ffb400;
-    }
-</style>
+<div class="page-container">
 
-<div class="detail-wrapper">
-
-    <!-- Restaurant Header -->
-    <div class="detail-header">
-        {% if restaurant.photo %}
-            <img class="detail-photo" src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}">
-        {% endif %}
-        <h1 class="detail-title">{{ restaurant.name }}</h1>
-        <div class="detail-meta">
-            <span class="badge">🍽️ {{ restaurant.category.name }}</span>
-            {% if restaurant.location %}
-                <span class="badge">📍 {{ restaurant.location.name }}</span>
-            {% endif %}
-            <span class="badge">📌 {{ restaurant.address }}</span>
-            {% if restaurant.phone %}
-                <span class="badge">📞 {{ restaurant.phone }}</span>
-            {% endif %}
-            <span class="badge">💰 {{ restaurant.get_price_range_display }}</span>
-            <span class="badge">⭐ {{ restaurant.average_rating }} / 5</span>
-        </div>
-        <p style="color:#555; margin:0;">{{ restaurant.description }}</p>
+  <div class="detail-header-row" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem;">
+    <div style="flex:1; min-width:200px;">
+      {% if restaurant.photo %}
+        <img class="detail-photo" src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}">
+      {% endif %}
+      <h1 class="detail-title" style="margin-top:1rem;">{{ restaurant.name }}</h1>
     </div>
-
-    <!-- Owner Management Bar -->
-    {% if can_manage_restaurant %}
-    <div class="manage-bar">
-        <a class="btn-edit" href="{% url 'restaurants:edit_restaurant' restaurant.id %}">✏️ Edit Restaurant</a>
-        <form action="{% url 'restaurants:delete_restaurant' restaurant.id %}" method="post" style="display:inline;" onsubmit="return confirm('Delete this restaurant? This cannot be undone.');">
-            {% csrf_token %}
-            <button type="submit" class="btn-delete">🗑️ Delete Restaurant</button>
-        </form>
-        <a class="btn-edit" href="{% url 'restaurants:add_menu_item' restaurant.id %}">➕ Add Menu Item</a>
-    </div>
-    {% endif %}
-
-    <!-- Opening Hours -->
-    <div class="section-card">
-        <h3>🕐 Opening Hours</h3>
-        {% if opening_hours %}
-            <table class="hours-table">
-                {% for hours in opening_hours %}
-                <tr>
-                    <td>{{ hours.get_day_display }}</td>
-                    <td>{{ hours.open_time|time:"H:i" }} – {{ hours.close_time|time:"H:i" }}</td>
-                    {% if can_manage_restaurant %}
-                        <td style="text-align:right;">
-                            <a class="btn-sm" href="{% url 'restaurants:edit_opening_hours' hours.id %}">Edit</a>
-                            <form action="{% url 'restaurants:delete_opening_hours' hours.id %}" method="post" style="display:inline;" onsubmit="return confirm('Delete these opening hours?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-            </table>
-        {% else %}
-            <p style="color:#999; margin:0;">Opening hours not specified.</p>
-        {% endif %}
-
-        {% if can_manage_restaurant %}
-            <div style="margin-top: 0.85rem;">
-                <a class="btn-edit" href="{% url 'restaurants:add_opening_hours' restaurant.id %}">➕ Add Opening Hours</a>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Menu -->
-    <div class="section-card">
-        <h3>📋 Menu</h3>
-        {% if menu_items %}
-            <ul class="menu-list">
-                {% for item in menu_items %}
-                <li class="menu-item">
-                    <div class="menu-item-info">
-                        <strong>{{ item.name }}</strong>
-                        {% if item.description %}<small>{{ item.description }}</small>{% endif %}
-                        {% if can_manage_restaurant %}
-                        <div class="menu-item-actions">
-                            <a class="btn-sm" href="{% url 'restaurants:edit_menu_item' item.id %}">Edit</a>
-                            <a class="btn-sm btn-danger" href="{% url 'restaurants:delete_menu_item' item.id %}">Delete</a>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="menu-item-price">₺{{ item.price }}</div>
-                </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p style="color:#999; margin:0;">No menu items added yet.</p>
-        {% endif %}
-    </div>
-
-    <!-- Favorites -->
     {% if user.is_authenticated %}
-    <div class="section-card">
-        <h3>🔖 Save This Place</h3>
-        <form action="{% url 'restaurants:toggle_favorite' restaurant.id %}" method="post">
-            {% csrf_token %}
-            {% if is_favorite %}
-                <button type="submit" class="btn-fav active">❤️ Remove from Favorites</button>
-            {% else %}
-                <button type="submit" class="btn-fav">🤍 Save to Favorites</button>
-            {% endif %}
-        </form>
-    </div>
+    <form action="{% url 'restaurants:toggle_favorite' restaurant.id %}" method="post" style="margin-top:0.5rem;">
+      {% csrf_token %}
+      {% if is_favorite %}
+        <button type="submit" class="btn-fav active" data-en="❤️ Saved" data-tr="❤️ Kayıtlı">❤️ Saved</button>
+      {% else %}
+        <button type="submit" class="btn-fav" data-en="🤍 Save" data-tr="🤍 Kaydet">🤍 Save</button>
+      {% endif %}
+    </form>
     {% endif %}
+  </div>
 
-    <!-- Write a Review -->
-    {% if user.is_authenticated %}
-    <div class="section-card">
-        <h3>✍️ Write a Review</h3>
-        <form class="review-form" action="{% url 'restaurants:add_review' restaurant.id %}" method="post">
-            {% csrf_token %}
-            <label>Rating</label>
-            <div class="star-rating">
-                <button type="button" class="star-btn" data-value="1" aria-label="Rate 1 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="2" aria-label="Rate 2 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="3" aria-label="Rate 3 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="4" aria-label="Rate 4 out of 5">★</button>
-                <button type="button" class="star-btn" data-value="5" aria-label="Rate 5 out of 5">★</button>
-              </div>
-              
-              <input type="hidden" name="rating" id="rating-input" required>
-            
-
-            <label for="id_comment">Comment</label>
-            <textarea name="comment" id="id_comment" rows="4" required placeholder="Share your experience..."></textarea>
-
-            <button type="submit" class="btn-primary">Submit Review</button>
-        </form>
-    </div>
-    {% else %}
-        <p><a href="{% url 'login' %}?next={{ request.path }}" style="color:#ff6b35; font-weight:600;">Log in</a> to save favorites or post a review.</p>
+  <div class="detail-meta">
+    <span class="badge">🍽️ {{ restaurant.category.name }}</span>
+    {% if restaurant.location %}
+      <span class="badge">📍 {{ restaurant.location.name }}</span>
     {% endif %}
+    <span class="badge">📌 {{ restaurant.address }}</span>
+    {% if restaurant.phone %}
+      <span class="badge">📞 {{ restaurant.phone }}</span>
+    {% endif %}
+    <span class="badge">💰 {{ restaurant.get_price_range_display }}</span>
+    <span class="badge" style="background:var(--primary-soft); color:var(--primary); border-color:#ffd0b5;">
+      ⭐ {{ restaurant.average_rating }} / 5
+    </span>
+  </div>
 
-    <!-- Reviews -->
-    <div class="section-card">
-        <h3>💬 Reviews</h3>
-        {% for review in reviews %}
-        <div class="review-card">
-            <div class="review-header">
-                <span class="review-user">{{ review.user.username }}</span>
-                {% if review.rating %}
-                    <span class="review-rating">
-                        {% for i in "12345" %}{% if forloop.counter <= review.rating %}⭐{% endif %}{% endfor %}
-                        ({{ review.rating }}/5)
-                    </span>
-                {% endif %}
-                <span class="review-date">{{ review.created_at|date:"F d, Y" }}</span>
-            </div>
-            <p class="review-comment">{{ review.comment }}</p>
+  {% if restaurant.description %}
+    <p class="detail-desc">{{ restaurant.description }}</p>
+  {% endif %}
 
-            {% if user.is_authenticated and review.user == user %}
-            <div class="review-actions">
-                <a class="btn-sm" href="{% url 'restaurants:edit_review' review.id %}">Edit</a>
-                <form action="{% url 'restaurants:delete_review' review.id %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-sm btn-danger">Delete</button>
-                </form>
-            </div>
-            {% endif %}
+  {% if restaurant.google_maps_embed_url %}
+  <div class="section-card">
+    <span class="section-card__title" data-en="📍 Location" data-tr="📍 Konum">📍 Location</span>
+    <div style="width:100%; height:320px; margin-top:0.75rem;">
+      <iframe
+        src="{{ restaurant.google_maps_embed_url }}"
+        width="100%" height="100%"
+        style="border:0; border-radius:var(--radius-sm);"
+        allowfullscreen loading="lazy"
+        title="Map of {{ restaurant.name }}">
+      </iframe>
+    </div>
+  </div>
+  {% endif %}
 
-            <!-- Replies List -->
-            {% if review.replies.count %}
-            <div class="replies-section">
-                {% for reply in review.replies.all %}
-                <div class="reply-card">
-                    <div class="reply-header">
-                        <span class="reply-user">↩ {{ reply.user.username }}</span>
-                        <span class="reply-date">{{ reply.created_at|date:"F d, Y" }}</span>
-                    </div>
-                    <p class="reply-comment">{{ reply.comment }}</p>
-                    {% if user.is_authenticated and reply.user == user %}
-                    <form action="{% url 'restaurants:delete_review' reply.id %}" method="post" style="margin-top:0.3rem;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-sm btn-danger">Delete Reply</button>
-                    </form>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
+  {% if can_manage_restaurant %}
+  <div class="manage-bar">
+    <span class="manage-bar__label" data-en="Manage" data-tr="Yönet">Manage</span>
+    <a class="btn btn-blue btn-sm" href="{% url 'restaurants:edit_restaurant' restaurant.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
+    <a class="btn btn-danger btn-sm" href="{% url 'restaurants:delete_restaurant' restaurant.id %}" data-en="Delete" data-tr="Sil">Delete</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_menu_item' restaurant.id %}" data-en="Add Menu Item" data-tr="Menü Öğesi Ekle">Add Menu Item</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_opening_hours' restaurant.id %}" data-en="Add Hours" data-tr="Saat Ekle">Add Hours</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:add_photo' restaurant.id %}" data-en="Add Photo" data-tr="Fotoğraf Ekle">Add Photo</a>
+  </div>
+  {% endif %}
 
-            <!-- Reply Form -->
-            {% if user.is_authenticated %}
-            <div class="reply-form">
-                <form action="{% url 'restaurants:add_reply' review.id %}" method="post">
-                    {% csrf_token %}
-                    <textarea name="comment" rows="2" placeholder="Write a reply..." required></textarea>
-                    <button type="submit">Reply</button>
-                </form>
-            </div>
-            {% endif %}
-        </div>
-        {% empty %}
-            <p style="color:#999;">No reviews yet. Be the first to review!</p>
+  <div class="section-card">
+    <span class="section-card__title" data-en="🕐 Opening Hours" data-tr="🕐 Çalışma Saatleri">🕐 Opening Hours</span>
+    {% if opening_hours %}
+      <table class="hours-table" style="margin-top:0.75rem;">
+        <tbody>
+        {% for hours in opening_hours %}
+        <tr>
+          <td>{{ hours.get_day_display }}</td>
+          <td>{{ hours.open_time|time:"H:i" }} – {{ hours.close_time|time:"H:i" }}</td>
+          {% if can_manage_restaurant %}
+          <td style="text-align:right;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_opening_hours' hours.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
+            <form action="{% url 'restaurants:delete_opening_hours' hours.id %}" method="post" style="display:inline;"
+                  onsubmit="return confirm('Delete these opening hours?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm" data-en="Delete" data-tr="Sil">Delete</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
         {% endfor %}
-    </div>
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state" style="padding:1.5rem 0;">
+        <div class="empty-state__icon">🕐</div>
+        <div class="empty-state__title" data-en="No hours listed" data-tr="Saat yok">No hours listed</div>
+        <div class="empty-state__desc" data-en="Opening hours have not been added yet." data-tr="Çalışma saatleri henüz eklenmedi.">Opening hours have not been added yet.</div>
+        {% if can_manage_restaurant %}
+          <a href="{% url 'restaurants:add_opening_hours' restaurant.id %}" class="btn btn-outline btn-sm mt-1" data-en="+ Add Opening Hours" data-tr="+ Çalışma Saati Ekle">+ Add Opening Hours</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
 
-    <a class="back-link" href="{% url 'restaurants:list' %}">← Back to Restaurant List</a>
+  <div class="section-card">
+    <span class="section-card__title" data-en="📸 Photo Gallery" data-tr="📸 Fotoğraf Galerisi">📸 Photo Gallery</span>
+    {% if gallery_photos %}
+      <div class="photo-gallery" style="margin-top:0.75rem;">
+        {% for photo in gallery_photos %}
+          <div class="photo-thumb">
+            <img src="{{ photo.image.url }}"
+                 alt="{{ photo.caption|default:'Gallery photo' }}"
+                 class="lightbox-trigger"
+                 style="cursor:zoom-in;">
+            {% if can_manage_restaurant %}
+              <form action="{% url 'restaurants:delete_photo' photo.id %}" method="post"
+                    onsubmit="return confirm('Delete this photo?');">
+                {% csrf_token %}
+                <button type="submit" class="photo-thumb__del" title="Delete photo" data-en-title="Delete photo" data-tr-title="Fotoğrafı sil">✕</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted mt-2" data-en="No gallery photos yet." data-tr="Henüz galeri fotoğrafı yok.">No gallery photos yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="section-card">
+    <span class="section-card__title" data-en="📋 Menu" data-tr="📋 Menü">📋 Menu</span>
+    {% if menu_items %}
+      <ul class="menu-list" style="margin-top:0.75rem;">
+        {% for item in menu_items %}
+        <li class="menu-item">
+          <div class="menu-item-info">
+            <strong>{{ item.name }}</strong>
+            {% if item.category %}<small class="text-muted">{{ item.category }}</small>{% endif %}
+            {% if item.description %}<small>{{ item.description }}</small>{% endif %}
+            {% if can_manage_restaurant %}
+              <div class="menu-item-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_menu_item' item.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
+                <a class="btn btn-danger btn-sm" href="{% url 'restaurants:delete_menu_item' item.id %}"
+                   onclick="return confirm('Delete {{ item.name }}?');" data-en="Delete" data-tr="Sil">Delete</a>
+              </div>
+            {% endif %}
+          </div>
+          <div class="menu-item-price">₺{{ item.price }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-state" style="padding:1.5rem 0;">
+        <div class="empty-state__icon">📋</div>
+        <div class="empty-state__title" data-en="Menu not available" data-tr="Menü yok">Menu not available</div>
+        <div class="empty-state__desc" data-en="No menu items yet." data-tr="Henüz menü öğesi yok.">No menu items yet.</div>
+        {% if can_manage_restaurant %}
+          <a href="{% url 'restaurants:add_menu_item' restaurant.id %}" class="btn btn-outline btn-sm mt-1" data-en="+ Add Menu Item" data-tr="+ Menü Öğesi Ekle">+ Add Menu Item</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if user.is_authenticated %}
+  <div class="section-card">
+    <span class="section-card__title" data-en="✍️ Write a Review" data-tr="✍️ Yorum Yaz">✍️ Write a Review</span>
+    <form class="fm-form" action="{% url 'restaurants:add_review' restaurant.id %}" method="post" style="margin-top:0.75rem;">
+      {% csrf_token %}
+      <label for="rating-input" data-en="Your Rating" data-tr="Puanınız">Your Rating</label>
+      <div class="star-rating" role="group" aria-label="Select rating" data-en-aria="Select rating" data-tr-aria="Puan seçin">
+        <button type="button" class="star-btn" data-value="1" aria-label="Rate 1 star" data-en-aria="Rate 1 star" data-tr-aria="1 yıldız ver">★</button>
+        <button type="button" class="star-btn" data-value="2" aria-label="Rate 2 stars" data-en-aria="Rate 2 stars" data-tr-aria="2 yıldız ver">★</button>
+        <button type="button" class="star-btn" data-value="3" aria-label="Rate 3 stars" data-en-aria="Rate 3 stars" data-tr-aria="3 yıldız ver">★</button>
+        <button type="button" class="star-btn" data-value="4" aria-label="Rate 4 stars" data-en-aria="Rate 4 stars" data-tr-aria="4 yıldız ver">★</button>
+        <button type="button" class="star-btn" data-value="5" aria-label="Rate 5 stars" data-en-aria="Rate 5 stars" data-tr-aria="5 yıldız ver">★</button>
+      </div>
+      <input type="hidden" name="rating" id="rating-input" required>
+
+      <label for="id_comment" data-en="Your Comment" data-tr="Yorumunuz">Your Comment</label>
+      <textarea name="comment" id="id_comment" rows="4" required placeholder="Share your experience..."
+                data-en-placeholder="Share your experience..."
+                data-tr-placeholder="Deneyimini paylaş..."></textarea>
+
+      <button type="submit" class="btn btn-primary" data-en="Submit Review" data-tr="Gönder">Submit Review</button>
+    </form>
+  </div>
+  {% else %}
+    <div class="section-card text-center" style="padding:1.5rem;">
+      <p class="text-muted mb-2" data-en="Log in to review and save favorites." data-tr="Yorum ve favoriler için giriş yapın.">Log in to review and save favorites.</p>
+      <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary" data-en="Log in" data-tr="Giriş Yap">Log in</a>
+    </div>
+  {% endif %}
+
+  <div class="section-card">
+    <span class="section-card__title" data-en="💬 Reviews" data-tr="💬 Yorumlar">💬 Reviews</span>
+
+    {% for review in reviews %}
+    <div class="review-card" id="review-{{ review.id }}">
+      <div class="review-header">
+        <div class="review-avatar">{{ review.user.username|first|upper }}</div>
+        <span class="review-user">{{ review.user.username }}</span>
+        {% if review.rating %}
+          <span class="review-stars">
+            {% for i in "12345" %}{% if forloop.counter <= review.rating %}⭐{% endif %}{% endfor %}
+            ({{ review.rating }}/5)
+          </span>
+        {% endif %}
+        <span class="review-date" data-date="{{ review.created_at|date:'c' }}" data-date-format="long">{{ review.created_at|date:"F d, Y" }}</span>
+      </div>
+
+      <p class="review-comment">{{ review.comment }}</p>
+
+      <div class="review-like-box" style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <form action="{% url 'restaurants:toggle_review_like' review.id %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" name="action" value="like" class="reaction-btn" aria-label="Like" data-en-aria="Like" data-tr-aria="Beğen">👍 {{ review.like_count }}</button>
+        </form>
+        <form action="{% url 'restaurants:toggle_review_like' review.id %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" name="action" value="dislike" class="reaction-btn" aria-label="Dislike" data-en-aria="Dislike" data-tr-aria="Beğenme">👎 {{ review.dislike_count }}</button>
+        </form>
+      </div>
+
+      {% if user.is_authenticated and review.user == user %}
+      <div class="review-actions">
+        <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:edit_review' review.id %}" data-en="Edit" data-tr="Düzenle">Edit</a>
+        <form action="{% url 'restaurants:delete_review' review.id %}" method="post" style="display:inline;"
+              onsubmit="return confirm('Delete your review?');">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-sm" data-en="Delete" data-tr="Sil">Delete</button>
+        </form>
+      </div>
+      {% endif %}
+
+      {% if review.replies.count %}
+      <div class="replies-section">
+        {% for reply in review.replies.all %}
+        <div class="reply-card" id="reply-{{ reply.id }}">
+          <div class="reply-header">
+            <span class="reply-user">{{ reply.user.username }}</span>
+            <span class="reply-date" data-date="{{ reply.created_at|date:'c' }}" data-date-format="long">{{ reply.created_at|date:"F d, Y" }}</span>
+          </div>
+          <p class="reply-comment">{{ reply.comment }}</p>
+          {% if user.is_authenticated and reply.user == user %}
+          <form action="{% url 'restaurants:delete_review' reply.id %}" method="post" style="margin-top:0.3rem;"
+                onsubmit="return confirm('Delete this reply?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm" data-en="Delete Reply" data-tr="Yanıtı Sil">Delete Reply</button>
+          </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if user.is_authenticated %}
+      <div class="reply-form">
+        <form action="{% url 'restaurants:add_reply' review.id %}" method="post">
+          {% csrf_token %}
+          <textarea name="comment" rows="2" placeholder="Write a reply..." required
+                    data-en-placeholder="Write a reply..."
+                    data-tr-placeholder="Yanıt yaz..."></textarea>
+          <button type="submit" class="btn btn-ghost btn-sm" data-en="Reply" data-tr="Yanıtla">Reply</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+    {% empty %}
+      <p class="text-muted" data-en="No reviews yet. Be the first!" data-tr="Henüz yorum yok. İlk sen yaz!">No reviews yet. Be the first!</p>
+    {% endfor %}
+  </div>
+
+  <a class="btn btn-ghost btn-sm" href="{% url 'restaurants:list' %}" style="margin-top:0.5rem; display:inline-block;" data-en="← Back to list" data-tr="← Listeye dön">← Back to list</a>
 
 </div>
+
+<div id="lightbox" class="lightbox-overlay" role="dialog" aria-modal="true" aria-label="Photo viewer" data-en-aria="Photo viewer" data-tr-aria="Fotoğraf görüntüleyici" hidden>
+  <button type="button" class="lightbox-close" aria-label="Close" data-en-aria="Close" data-tr-aria="Kapat">×</button>
+  <img class="lightbox-image" src="" alt="">
+  <div class="lightbox-caption" aria-live="polite"></div>
+</div>
+
 <script>
-  (function () {
-    const input = document.getElementById("rating-input");
-    const stars = document.querySelectorAll(".star-btn");
+(function () {
+  const input = document.getElementById("rating-input");
+  const stars = document.querySelectorAll(".star-btn");
+  if (!input || !stars.length) return;
 
-    if (!input || stars.length === 0) return;
-
-    function paint(value) {
-      stars.forEach((star, idx) => {
-        star.classList.toggle("active", idx < value);
-      });
-    }
-
-    stars.forEach((star) => {
-      star.addEventListener("click", () => {
-        const value = Number(star.dataset.value || 0);
-        input.value = String(value);
-        paint(value);
-      });
+  function paint(value) {
+    stars.forEach((star, idx) => {
+      star.classList.toggle("active", idx < value);
     });
-  })();
-</script>
+  }
 
+  stars.forEach((star) => {
+    star.addEventListener("click", () => {
+      const value = Number(star.dataset.value || 0);
+      input.value = String(value);
+      paint(value);
+    });
+  });
+
+  document.querySelector(".star-rating")?.addEventListener("mouseleave", () => {
+    paint(Number(input.value) || 0);
+  });
+})();
+
+(function () {
+  const overlay = document.getElementById("lightbox");
+  if (!overlay) return;
+  const overlayImg = overlay.querySelector(".lightbox-image");
+  const caption = overlay.querySelector(".lightbox-caption");
+  const triggers = document.querySelectorAll(".lightbox-trigger");
+  if (!triggers.length) return;
+
+  function open(img) {
+    overlayImg.src = img.src;
+    overlayImg.alt = img.alt;
+    caption.textContent = img.alt && img.alt !== "Gallery photo" ? img.alt : "";
+    overlay.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function close() {
+    overlay.hidden = true;
+    overlayImg.src = "";
+    document.body.style.overflow = "";
+  }
+
+  triggers.forEach(img => img.addEventListener("click", () => open(img)));
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlayImg) return;
+    close();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !overlay.hidden) close();
+  });
+})();
+</script>
 {% endblock %}

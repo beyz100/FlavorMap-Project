@@ -24,6 +24,7 @@ class Restaurant(models.Model):
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name='restaurants')
     description = models.TextField()
     address = models.CharField(max_length=255)
+    google_maps_embed_url = models.URLField(max_length=1000, blank=True, null=True)
 
     PRICE_CHOICES = [
         ('1', '₺'),
@@ -49,6 +50,7 @@ class MenuItem(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=6, decimal_places=2)
+    category = models.CharField(max_length=50, blank=True, help_text="e.g., Starters, Main Course, Dessert")
 
     class Meta:
         verbose_name_plural = "Menu Items"
@@ -74,7 +76,21 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.restaurant.name} - {self.user.username}"
+        if self.parent_id:
+            return f"Reply by {self.user.username} on {self.restaurant.name}"
+        return f"{self.user.username} → {self.restaurant.name} ({self.rating}/5)"
+
+class ReviewLike(models.Model):
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_like = models.BooleanField()  # True = like, False = dislike
+
+    class Meta:
+        unique_together = ('review', 'user')
+
+    def __str__(self):
+        reaction = "like" if self.is_like else "dislike"
+        return f"{self.user.username} {reaction}d review #{self.review_id}"
 
 
 class Favorite(models.Model):
@@ -98,8 +114,13 @@ class Favorite(models.Model):
 
 class OpeningHours(models.Model):
     DAY_CHOICES = [
-        ('weekdays', 'Weekdays'),
-        ('weekends', 'Weekends'),
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
     ]
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='opening_hours')
     day = models.CharField(max_length=20, choices=DAY_CHOICES)
@@ -107,8 +128,17 @@ class OpeningHours(models.Model):
     close_time = models.TimeField()
 
     class Meta:
-        ordering = ['day']
         unique_together = ('restaurant', 'day')
 
     def __str__(self):
         return f"{self.restaurant.name} - {self.get_day_display()}"
+
+class RestaurantPhoto(models.Model):
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='gallery_photos')
+    image = models.ImageField(upload_to='restaurant_gallery/')
+    caption = models.CharField(max_length=255, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Photo for {self.restaurant.name}"
+

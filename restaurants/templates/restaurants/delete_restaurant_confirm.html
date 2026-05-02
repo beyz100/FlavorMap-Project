@@ -1,0 +1,29 @@
+{% extends 'restaurants/base.html' %}
+{% block title %}Delete {{ restaurant.name }} – FlavorMap{% endblock %}
+
+{% block content %}
+<div class="page-container page-container--narrow">
+
+  <div class="section-card" style="text-align:center; padding:2rem;">
+    <div style="font-size:3rem; margin-bottom:0.5rem;">⚠️</div>
+    <h1 style="margin:0 0 0.75rem;" data-en="Delete this restaurant?" data-tr="Bu restoran silinsin mi?">Delete this restaurant?</h1>
+    <p style="color:var(--text-mid); margin:0 0 1.5rem;">
+      <span data-en="You are about to permanently delete" data-tr="Kalıcı olarak silmek üzeresiniz:">You are about to permanently delete</span>
+      <strong>{{ restaurant.name }}</strong>.
+      <span data-en="This action cannot be undone — all menu items, reviews, opening hours, and gallery photos for this restaurant will be removed as well." data-tr="Bu işlem geri alınamaz; menü, yorumlar, çalışma saatleri ve galeri fotoğrafları da silinir.">This action cannot be undone — all menu items, reviews, opening hours, and gallery photos for this restaurant will be removed as well.</span>
+    </p>
+
+    <form method="post" action="{% url 'restaurants:delete_restaurant' restaurant.id %}"
+          style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+      {% csrf_token %}
+      <a href="{% url 'restaurants:detail' restaurant.id %}" class="btn btn-ghost" id="cancel-delete-btn" data-en="Cancel" data-tr="İptal">
+        Cancel
+      </a>
+      <button type="submit" class="btn btn-danger" id="confirm-delete-btn" data-en="Yes, delete permanently" data-tr="Evet, kalıcı olarak sil">
+        Yes, delete permanently
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

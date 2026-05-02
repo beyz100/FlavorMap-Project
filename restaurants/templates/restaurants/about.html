@@ -1,6 +1,32 @@
 {% extends 'restaurants/base.html' %}
+{% block title %}About Us – FlavorMap{% endblock %}
+{% block meta_description %}Learn more about FlavorMap, a web application built for CSE 220.{% endblock %}
 
 {% block content %}
-    <h2>{{ title }}</h2>
-    <p>Developed for the CSE 220 Web Programming course.</p>
+<div class="page-container page-container--narrow">
+
+  <div class="page-hero" style="padding:2.5rem 2rem;">
+    <h1 data-en="About FlavorMap" data-tr="FlavorMap Hakkında">About FlavorMap</h1>
+    <p data-en="A restaurant discovery app built for CSE 220 Web Programming course." data-tr="CSE 220 Web Programlama için geliştirilmiş bir restoran keşif uygulaması.">A restaurant discovery app built for CSE 220 Web Programming.</p>
+  </div>
+
+  <div class="section-card">
+    <span class="section-card__title" data-en="About This Project" data-tr="Bu Proje Hakkında">About This Project</span>
+    <p style="color:var(--text-mid); line-height:1.8; font-size:0.95rem;" data-en="FlavorMap was developed as part of the CSE 220 Web Programming course. The goal of this project is to create a restaurant discovery platform where users can explore restaurants, read and write reviews, manage favorites, and view menus and opening hours." data-tr="FlavorMap, CSE 220 Web Programlama dersi kapsamında geliştirilmiştir. Projenin amacı, kullanıcıların restoranları keşfedebileceği, yorum okuyup yazabileceği, favorileri yönetebileceği ve menü ile çalışma saatlerini görebileceği bir platform oluşturmaktır.">
+      FlavorMap was developed as part of the CSE 220 Web Programming course. The goal of this project is to create a restaurant discovery platform where users can explore restaurants, read and write reviews, manage favorites, and view menus and opening hours.
+    </p>
+    <br>
+    <p style="color:var(--text-mid); line-height:1.8; font-size:0.95rem;" data-en="Built with Django." data-tr="Django ile geliştirilmiştir.">
+      Built with Django.
+    </p>
+  </div>
+
+  <div style="text-align:center; margin-top:1rem;">
+    <a href="{% url 'restaurants:list' %}" class="btn btn-primary btn-lg" id="explore-restaurants-btn"
+       data-en="Explore Restaurants →" data-tr="Restoranları Keşfet →">
+      Explore Restaurants →
+    </a>
+  </div>
+
+</div>
 {% endblock %}

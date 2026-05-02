@@ -1,36 +1,104 @@
 {% extends 'restaurants/base.html' %}
+{% block title %}My Profile – FlavorMap{% endblock %}
 
 {% block content %}
-    <h1>Your profile</h1>
-    <p>Signed in as <strong>{{ user.username }}</strong>.</p>
+<div class="page-container page-container--narrow">
 
-    <h2>Your reviews</h2>
-    {% if reviews %}
-        <ul>
-            {% for review in reviews %}
-                <li>
-                    <strong><a href="{% url 'restaurants:detail' review.restaurant.id %}">{{ review.restaurant.name }}</a></strong>
-                    — {{ review.rating }} ⭐
-                    <p>{{ review.comment }}</p>
-                    <small><em>{{ review.created_at|date:"F d, Y" }}</em></small>
-                </li>
-            {% endfor %}
-        </ul>
+  <div class="profile-header">
+    <div class="profile-avatar">{{ user.username|first|upper }}</div>
+    <div>
+      <div class="profile-name">{{ user.username }}</div>
+      <div class="profile-sub" data-en="Member of FlavorMap" data-tr="FlavorMap üyesi">Member of FlavorMap</div>
+    </div>
+    <a href="{% url 'restaurants:create_restaurant' %}" class="btn btn-primary btn-sm" style="margin-left:auto;" id="add-restaurant-btn"
+       data-en="+ Add Restaurant" data-tr="+ Restoran Ekle">
+      + Add Restaurant
+    </a>
+  </div>
+
+  <div class="section-card" style="margin-bottom:1.5rem;">
+    <span class="section-card__title" data-en="📝 About me" data-tr="📝 Hakkımda">📝 About me</span>
+    {% if profile.bio %}
+      <p style="margin:0.5rem 0 0; color:var(--text-mid); white-space:pre-wrap;">{{ profile.bio }}</p>
     {% else %}
-        <p>You have not written any reviews yet.</p>
+      <p style="margin:0.5rem 0 0; color:var(--text-light); font-style:italic;" data-en="You haven't written a bio yet." data-tr="Henüz bir biyografi yazmadın.">You haven't written a bio yet.</p>
     {% endif %}
 
-    <h2>Your favorites</h2>
-    {% if favorites %}
-        <ul>
-            {% for fav in favorites %}
-                <li>
-                    <a href="{% url 'restaurants:detail' fav.restaurant.id %}">{{ fav.restaurant.name }}</a>
-                    <small>— saved {{ fav.created_at|date:"M j, Y" }}</small>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>You have no saved favorites yet. Open a restaurant page and use “Save to favorites”.</p>
-    {% endif %}
+    <details style="margin-top:0.75rem;">
+      <summary style="cursor:pointer; color:var(--primary); font-weight:600; font-size:0.9rem;" data-en="Edit bio" data-tr="Biyografiyi düzenle">
+        Edit bio
+      </summary>
+      <form method="post" action="{% url 'restaurants:profile' %}" style="margin-top:0.75rem;">
+        {% csrf_token %}
+        <textarea name="bio" rows="3" maxlength="500"
+                  placeholder="Tell others a bit about yourself..."
+                  data-en-placeholder="Tell others a bit about yourself..."
+                  data-tr-placeholder="Kendinden bahset..."
+                  style="width:100%; padding:0.6rem; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:0.95rem; box-sizing:border-box; resize:vertical;">{{ profile.bio }}</textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.4rem;">
+          <small style="color:var(--text-light);" data-en="Max 500 characters" data-tr="En fazla 500 karakter">Max 500 characters</small>
+          <button type="submit" class="btn btn-primary btn-sm" id="save-bio-btn" data-en="Save" data-tr="Kaydet">Save</button>
+        </div>
+      </form>
+    </details>
+  </div>
+
+  <div class="profile-grid">
+
+    <div>
+      <h2 class="section-heading" style="font-size:1.15rem;" data-en="✍️ Your Reviews" data-tr="✍️ Yorumların">✍️ Your Reviews</h2>
+      {% if reviews %}
+        {% for review in reviews %}
+        <div class="section-card" style="padding:1rem; margin-bottom:1rem;" id="profile-review-{{ review.id }}">
+          <a href="{% url 'restaurants:detail' review.restaurant.id %}"
+             style="font-weight:700; font-size:0.95rem; color:var(--primary); text-decoration:none;">
+            {{ review.restaurant.name }}
+          </a>
+          <div style="margin:0.3rem 0; color:var(--accent); font-size:0.88rem;">
+            {% for i in "12345" %}{% if forloop.counter <= review.rating %}⭐{% endif %}{% endfor %}
+            &nbsp;{{ review.rating }}/5
+          </div>
+          <p style="font-size:0.88rem; color:var(--text-mid); margin:0.3rem 0;">{{ review.comment }}</p>
+          <small class="text-muted" data-date="{{ review.created_at|date:'c' }}" data-date-format="long">{{ review.created_at|date:"F d, Y" }}</small>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state section-card" style="min-height:180px;">
+          <div class="empty-state__title" data-en="No reviews yet" data-tr="Henüz yorum yok">No reviews yet</div>
+          <div class="empty-state__desc" data-en="You haven't written any reviews. Go explore some restaurants!" data-tr="Henüz yorum yazmadın. Restoranları keşfet!">You haven't written any reviews. Go explore some restaurants!</div>
+          <a href="{% url 'restaurants:list' %}" class="btn btn-outline btn-sm mt-1" id="explore-btn" data-en="Explore Restaurants" data-tr="Restoranları Keşfet">Explore Restaurants</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <div>
+      <h2 class="section-heading" style="font-size:1.15rem;" data-en="❤️ Your Favorites" data-tr="❤️ Favorilerin">❤️ Your Favorites</h2>
+      {% if favorites %}
+        {% for fav in favorites %}
+        <div class="section-card" style="padding:1rem; margin-bottom:1rem;" id="profile-fav-{{ fav.id }}">
+          <a href="{% url 'restaurants:detail' fav.restaurant.id %}"
+             style="font-weight:700; font-size:0.95rem; color:var(--primary); text-decoration:none;">
+            {{ fav.restaurant.name }}
+          </a>
+          <div style="margin-top:0.3rem;">
+            <span class="badge">{{ fav.restaurant.category.name }}</span>
+            {% if fav.restaurant.location %}
+              <span class="badge">{{ fav.restaurant.location.name }}</span>
+            {% endif %}
+          </div>
+          <small class="text-muted" style="display:block; margin-top:0.4rem;"><span data-en="Saved" data-tr="Kaydedildi">Saved</span> <span data-date="{{ fav.created_at|date:'c' }}" data-date-format="short">{{ fav.created_at|date:"M j, Y" }}</span></small>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state section-card" style="min-height:180px;">
+          <div class="empty-state__title" data-en="No favorites saved" data-tr="Kayıtlı favori yok">No favorites saved</div>
+          <div class="empty-state__desc" data-en='Open a restaurant page and tap Save on a restaurant to keep places you love.' data-tr="Beğendiğin restoran sayfasında Kaydet ile favorilerine ekle.">Open a restaurant page and tap Save on a restaurant to keep places you love.</div>
+          <a href="{% url 'restaurants:list' %}" class="btn btn-outline btn-sm mt-1" id="browse-btn" data-en="Browse Restaurants" data-tr="Restoranlara Göz At">Browse Restaurants</a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
 {% endblock %}

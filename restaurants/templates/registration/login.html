@@ -1,16 +1,186 @@
-{% extends 'restaurants/base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
 
-{% block content %}
-    <h1>Log in</h1>
+    <style>
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #e05520;
+            --primary-soft: #fff0ea;
+            --text-dark: #1a1a2e;
+            --text-mid: #4a4a68;
+            --border: #e8e8f0;
+        }
 
-    {% if form.errors %}
-        <p>Your username and password did not match. Please try again.</p>
-    {% endif %}
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #fff0ea, #ffe2d4);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-dark);
+        }
 
-    <form method="post" action="{% url 'login' %}">
+        .login-box {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 14px;
+            width: 340px;
+            box-shadow: 0 10px 30px rgba(26,26,46,0.10);
+        }
+
+        h2 {
+            text-align: center;
+            margin: 0 0 1.5rem;
+            color: var(--primary);
+        }
+
+        form p {
+            margin: 0 0 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-mid);
+            margin-bottom: 0.35rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.65rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-soft);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.7rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            transition: background 0.15s;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        .helptext, .errorlist {
+            font-size: 0.8rem;
+            color: var(--text-mid);
+        }
+
+        .errorlist {
+            list-style: none;
+            padding: 0;
+            margin: 0.25rem 0 0;
+            color: #c0392b;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1.25rem;
+            font-size: 0.9rem;
+            color: var(--text-mid);
+        }
+
+        .register-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<div style="position:fixed; top:12px; right:12px; display:flex; gap:6px; z-index:10;">
+    <button type="button" style="padding:6px 12px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; font-weight:600;" onclick="setLang('tr')">TR</button>
+    <button type="button" style="padding:6px 12px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; font-weight:600;" onclick="setLang('en')">ENG</button>
+</div>
+
+<div class="login-box">
+    <h2 data-en="Login" data-tr="Giriş Yap">Login</h2>
+
+    <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Log in</button>
+
+        <button type="submit" data-en="Login" data-tr="Giriş Yap">Login</button>
     </form>
-    <p>You need an account to write reviews, save favorites, and view your profile.</p>
-{% endblock %}
+
+    <div class="register-link">
+        <p><span data-en="Don't have an account?" data-tr="Hesabın yok mu?">Don't have an account?</span> <a href="/register/" data-en="Register" data-tr="Kayıt ol">Register</a></p>
+    </div>
+</div>
+
+<script>
+function setLang(lang) {
+  try { localStorage.setItem("flavormap_lang", lang); } catch (e) {}
+  const isTr = lang === "tr";
+  document.documentElement.setAttribute("lang", isTr ? "tr" : "en");
+  function pick(en, tr, fallback) {
+    if (isTr) return (tr != null && tr !== "") ? tr : (fallback || "");
+    return (en != null && en !== "") ? en : (fallback || "");
+  }
+  document.querySelectorAll("[data-tr]").forEach((el) => {
+    const tr = el.getAttribute("data-tr");
+    const en = el.getAttribute("data-en");
+    const text = pick(en, tr, el.textContent);
+    const tag = el.tagName;
+    if (tag === "OPTION") el.textContent = text;
+    else if (tag === "INPUT") {
+      const type = (el.type || "").toLowerCase();
+      if (type === "submit" || type === "button" || type === "reset") el.value = text;
+    } else el.textContent = text;
+  });
+  document.querySelectorAll("[data-tr-placeholder]").forEach((el) => {
+    const tr = el.getAttribute("data-tr-placeholder");
+    const en = el.getAttribute("data-en-placeholder");
+    el.placeholder = pick(en, tr, el.placeholder);
+  });
+  document.querySelectorAll("[data-tr-title]").forEach((el) => {
+    const tr = el.getAttribute("data-tr-title");
+    const en = el.getAttribute("data-en-title");
+    el.title = pick(en, tr, el.title);
+  });
+  document.querySelectorAll("[data-tr-aria]").forEach((el) => {
+    const tr = el.getAttribute("data-tr-aria");
+    const en = el.getAttribute("data-en-aria");
+    const v = pick(en, tr, el.getAttribute("aria-label") || "");
+    if (v) el.setAttribute("aria-label", v);
+  });
+}
+(function () {
+  let saved = "en";
+  try { saved = localStorage.getItem("flavormap_lang") || "en"; } catch (e) {}
+  setLang(saved === "tr" ? "tr" : "en");
+})();
+</script>
+</body>
+</html>

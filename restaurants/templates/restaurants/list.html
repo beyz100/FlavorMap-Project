@@ -1,51 +1,117 @@
 {% extends 'restaurants/base.html' %}
+{% block title %}Restaurants – FlavorMap{% endblock %}
+{% block meta_description %}Browse, search, and filter all restaurants on FlavorMap. Find by category, location, price, or rating.{% endblock %}
 
 {% block content %}
+<div class="page-container">
 
-<h2>Restaurant List</h2>
+  <h1 class="section-heading" style="font-size:1.8rem; margin-bottom:1.5rem;" data-en="🍴 All Restaurants" data-tr="🍴 Tüm Restoranlar">🍴 All Restaurants</h1>
 
-<form method="GET">
-    <input type="text" name="q" placeholder="Search restaurants..." value="{{ request.GET.q }}">
-    
-    <select name="category">
-        <option value="">All Categories</option>
-        {% for cat in categories %}
-            <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
-        {% endfor %}
+  <form method="GET" class="filter-bar" id="filter-form" role="search"
+        aria-label="Filter restaurants" data-en-aria="Filter restaurants" data-tr-aria="Restoranları filtrele">
+    <input
+      type="text"
+      name="q"
+      id="search-input"
+      placeholder="Search restaurants..."
+      data-en-placeholder="Search restaurants..."
+      data-tr-placeholder="Restoran ara..."
+      value="{{ request.GET.q }}"
+      aria-label="Search by name, description, or location"
+      data-en-aria="Search by name, description, or location"
+      data-tr-aria="İsim, açıklama veya konuma göre ara"
+      style="flex:2; max-width:260px;"
+    >
+
+    <select name="category" id="category-select" aria-label="Filter by category" data-en-aria="Filter by category" data-tr-aria="Kategoriye göre filtrele">
+      <option value="" data-en="All Categories" data-tr="Tüm Kategoriler">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+          {{ cat.name }}
+        </option>
+      {% endfor %}
     </select>
-    <select name="location">
-        <option value="">All Locations</option>
-        {% for loc in locations %}
-            <option value="{{ loc.id }}" {% if request.GET.location == loc.id|stringformat:"s" %}selected{% endif %}>{{ loc.name }}</option>
-        {% endfor %}
-    </select>
-    <select name="price">
-        <option value="">All Prices</option>
-        <option value="1" {% if request.GET.price == "1" %}selected{% endif %}>₺</option>
-        <option value="2" {% if request.GET.price == "2" %}selected{% endif %}>₺₺</option>
-        <option value="3" {% if request.GET.price == "3" %}selected{% endif %}>₺₺₺</option>
-    </select>
-    <button type="submit">Filter</button>
-</form>
 
-<ul>
-    {% for restaurant in restaurants %}
-        <li style="margin-bottom: 15px;">
-            {% if restaurant.photo %}
-                <div style="margin-bottom: 5px;">
-                    <img src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}" style="max-width: 150px; height: 100px; border-radius: 8px; object-fit: cover;">
-                </div>
-            {% endif %}
-            <strong>{{ restaurant.name }}</strong> -
-            Category: {{ restaurant.category.name }} |
-            Location: {{ restaurant.location.name|default:"Not specified" }} |
-            Rating: {{ restaurant.annotated_avg_rating|default:0|floatformat:1 }} |
-            Price: {{ restaurant.get_price_range_display }} |
-            <a href="{% url 'restaurants:detail' restaurant.id %}">View Details</a>
-        </li>
-    {% empty %}
-        <li>No restaurants found.</li>
-    {% endfor %}
-</ul>
+    <select name="location" id="location-select" aria-label="Filter by location" data-en-aria="Filter by location" data-tr-aria="Konuma göre filtrele">
+      <option value="" data-en="All Locations" data-tr="Tüm Konumlar">All Locations</option>
+      {% for loc in locations %}
+        <option value="{{ loc.id }}" {% if request.GET.location == loc.id|stringformat:"s" %}selected{% endif %}>
+          {{ loc.name }}
+        </option>
+      {% endfor %}
+    </select>
 
+    <select name="price" id="price-select" aria-label="Filter by price range" data-en-aria="Filter by price range" data-tr-aria="Fiyat aralığına göre filtrele">
+      <option value="" data-en="All Prices" data-tr="Tüm Fiyatlar">All Prices</option>
+      <option value="1" {% if request.GET.price == "1" %}selected{% endif %} data-en="₺ Budget" data-tr="₺ Ekonomik">₺ Budget</option>
+      <option value="2" {% if request.GET.price == "2" %}selected{% endif %} data-en="₺₺ Mid-range" data-tr="₺₺ Orta">₺₺ Mid-range</option>
+      <option value="3" {% if request.GET.price == "3" %}selected{% endif %} data-en="₺₺₺ Premium" data-tr="₺₺₺ Üst segment">₺₺₺ Premium</option>
+    </select>
+
+    <select name="sort" id="sort-select" aria-label="Sort restaurants" data-en-aria="Sort restaurants" data-tr-aria="Restoranları sırala">
+      <option value="" data-en="Default Order" data-tr="Varsayılan sıra">Default Order</option>
+      <option value="rating" {% if request.GET.sort == "rating" %}selected{% endif %} data-en="⭐ Highest Rating" data-tr="⭐ En yüksek puan">⭐ Highest Rating</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary" id="filter-btn" data-en="Filter" data-tr="Filtrele">Filter</button>
+
+    {% if request.GET.q or request.GET.category or request.GET.location or request.GET.price or request.GET.sort %}
+      <a href="{% url 'restaurants:list' %}" class="btn btn-ghost" id="clear-btn" data-en="✕ Clear" data-tr="✕ Temizle">✕ Clear</a>
+    {% endif %}
+  </form>
+
+  {% if restaurants %}
+    <div class="restaurant-grid" id="results-grid">
+      {% for restaurant in restaurants %}
+        <a class="r-card" href="{% url 'restaurants:detail' restaurant.id %}" id="restaurant-card-{{ restaurant.id }}">
+          {% if restaurant.photo %}
+            <img class="r-card__img" src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }}">
+          {% else %}
+            <div class="r-card__placeholder">
+              {% if restaurant.category.name == "Pizza" %}🍕
+              {% elif restaurant.category.name == "Burger" %}🍔
+              {% elif restaurant.category.name == "Sushi" %}🍱
+              {% else %}🍽️{% endif %}
+            </div>
+          {% endif %}
+          <div class="r-card__body">
+            <div class="r-card__name">{{ restaurant.name }}</div>
+            <div class="r-card__meta">
+              <span>{{ restaurant.category.name }}</span>
+              {% if restaurant.location %}
+                <span> · 📍 {{ restaurant.location.name }}</span>
+              {% endif %}
+              <span> · {{ restaurant.get_price_range_display }}</span>
+            </div>
+            <div class="r-card__rating">
+              {% if restaurant.annotated_avg_rating %}
+                ⭐ {{ restaurant.annotated_avg_rating|floatformat:1 }} / 5
+              {% else %}
+                <span style="color:var(--text-light); font-weight:400;" data-en="No ratings yet" data-tr="Henüz puan yok">No ratings yet</span>
+              {% endif %}
+            </div>
+            <div class="r-card__footer" data-en="View Details →" data-tr="Detayları Gör →">View Details →</div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state" style="min-height:320px;">
+      <div class="empty-state__icon">🔍</div>
+      <div class="empty-state__title" data-en="No restaurants found" data-tr="Restoran bulunamadı">No restaurants found</div>
+      <div class="empty-state__desc" data-en="Try adjusting your search filters or clear them to see all restaurants." data-tr="Filtreleri değiştirin veya tüm restoranları görmek için temizleyin.">
+        Try adjusting your search filters or clear them to see all restaurants.
+      </div>
+      <a href="{% url 'restaurants:list' %}" class="btn btn-outline mt-2" id="clear-filters-btn" data-en="Clear All Filters" data-tr="Tüm Filtreleri Temizle">Clear All Filters</a>
+    </div>
+  {% endif %}
+
+  {% if user.is_authenticated %}
+    <div style="text-align:center; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+      <p style="color:var(--text-light); font-size:0.9rem; margin-bottom:0.75rem;" data-en="Can't find your favourite spot?" data-tr="Favori mekânını bulamadın mı?">Can't find your favourite spot?</p>
+      <a href="{% url 'restaurants:create_restaurant' %}" class="btn btn-primary" id="add-restaurant-btn" data-en="+ Add a Restaurant" data-tr="+ Restoran Ekle">+ Add a Restaurant</a>
+    </div>
+  {% endif %}
+
+</div>
 {% endblock %}
