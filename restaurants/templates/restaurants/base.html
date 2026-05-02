@@ -1,67 +1,85 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>FlavorMap</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FlavorMap – Discover Amazing Restaurants{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}FlavorMap helps you discover the best restaurants near you, explore menus, read reviews, and save your favorites.{% endblock %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'restaurants/css/styles.css' %}">
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="{% url 'restaurants:home' %}" data-en="Home" data-tr="Ana Sayfa">Home</a> |
-            <a href="{% url 'restaurants:list' %}" data-en="Restaurants" data-tr="Restoranlar">Restaurants</a> |
-            <a href="{% url 'restaurants:about' %}" data-en="About Us" data-tr="Hakkımızda">About Us</a> |
-            <a href="{% url 'restaurants:contact' %}" data-en="Contact" data-tr="İletişim">Contact</a>
-            
-            <button type="button" onclick="setLang('tr')">TR</button>
-            <button type="button" onclick="setLang('en')">ENG</button>
-            {% if user.is_authenticated %}
-                | <a href="{% url 'restaurants:profile' %}" data-en="Profile" data-tr="Profil">Profile</a>
-                | <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" data-en="Log out" data-tr="Çıkış Yap">Log out</button>
-                </form>
-            {% else %}
-                | <a href="{% url 'login' %}" data-en="Log in" data-tr="Giriş Yap">Log in</a>
-            {% endif %}
-        </nav>
-    </header>
-    <hr>
 
-    <main>
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
+  <nav class="fm-nav" role="navigation" aria-label="Main navigation">
+    <div class="fm-nav__inner">
+      <a href="{% url 'restaurants:home' %}" class="fm-nav__logo">🍽️ FlavorMap</a>
+      <div class="fm-nav__links">
+        <a href="{% url 'restaurants:home' %}" class="fm-nav__link" data-en="Home" data-tr="Ana Sayfa">Home</a>
+        <a href="{% url 'restaurants:list' %}" class="fm-nav__link" data-en="Restaurants" data-tr="Restoranlar">Restaurants</a>
+        <a href="{% url 'restaurants:about' %}" class="fm-nav__link" data-en="About Us" data-tr="Hakkımızda">About Us</a>
+        <a href="{% url 'restaurants:contact' %}" class="fm-nav__link" data-en="Contact" data-tr="İletişim">Contact</a>
+      </div>
+      <div class="fm-nav__actions">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="setLang('tr')" aria-label="Türkçe">TR</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="setLang('en')" aria-label="English">ENG</button>
+        {% if user.is_authenticated %}
+          <span class="fm-nav__user">{{ user.username }}</span>
+          <a href="{% url 'restaurants:profile' %}" class="btn btn-ghost btn-sm" data-en="Profile" data-tr="Profil">Profile</a>
+          <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm" data-en="Log out" data-tr="Çıkış Yap">Log out</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-ghost btn-sm" data-en="Log in" data-tr="Giriş Yap">Log in</a>
+          <a href="{% url 'register' %}" class="btn btn-primary btn-sm" data-en="Register" data-tr="Kayıt Ol">Register</a>
         {% endif %}
-        {% block content %}
-        {% endblock %}
-    </main>
+      </div>
+    </div>
+  </nav>
 
-    <hr>
-    <script>
-        function setLang(lang) {
-          try {
-            localStorage.setItem("flavormap_lang", lang);
-          } catch (e) {}
+  {% if messages %}
+  <div class="messages-bar" role="alert" aria-live="polite">
+    {% for message in messages %}
+      <div class="message message--{{ message.tags|default:'info' }}">
+        {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% else %}ℹ️{% endif %}
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
-          document.documentElement.setAttribute("lang", lang === "tr" ? "tr" : "en");
+  <main>
+    {% block content %}{% endblock %}
+  </main>
 
-          document.querySelectorAll("[data-tr]").forEach((el) => {
-            const tr = el.getAttribute("data-tr");
-            const en = el.getAttribute("data-en");
-            el.textContent = lang === "tr" ? (tr ?? el.textContent) : (en ?? el.textContent);
-          });
-        }
+  <footer class="fm-footer">
+    <p>© 2026 FlavorMap — Discover great food near you 🍴</p>
+  </footer>
 
-        (function initLang() {
-          let saved = "en";
-          try {
-            saved = localStorage.getItem("flavormap_lang") || "en";
-          } catch (e) {}
-          setLang(saved === "tr" ? "tr" : "en");
-        })();
-    </script>
+  <script>
+    function setLang(lang) {
+      try {
+        localStorage.setItem("flavormap_lang", lang);
+      } catch (e) {}
+
+      document.documentElement.setAttribute("lang", lang === "tr" ? "tr" : "en");
+
+      document.querySelectorAll("[data-tr]").forEach((el) => {
+        const tr = el.getAttribute("data-tr");
+        const en = el.getAttribute("data-en");
+        el.textContent = lang === "tr" ? (tr ?? el.textContent) : (en ?? el.textContent);
+      });
+    }
+
+    (function initLang() {
+      let saved = "en";
+      try {
+        saved = localStorage.getItem("flavormap_lang") || "en";
+      } catch (e) {}
+      setLang(saved === "tr" ? "tr" : "en");
+    })();
+  </script>
 </body>
 </html>
