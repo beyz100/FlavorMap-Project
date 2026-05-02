@@ -187,18 +187,18 @@ class OpeningHoursCrudAuthorizationTest(TestCase):
             address="10 Street",
         )
         self.oh = OpeningHours.objects.create(
-            restaurant=self.restaurant, day="weekdays", open_time="09:00", close_time="17:00"
+            restaurant=self.restaurant, day="monday", open_time="09:00", close_time="17:00"
         )
 
     def test_owner_can_add_opening_hours(self):
         self.client.login(username="owner_oh", password="pass12345")
         r = self.client.post(
             reverse("restaurants:add_opening_hours", args=[self.restaurant.id]),
-            data={"day": "weekends", "open_time": "10:00", "close_time": "18:00"},
+            data={"day": "saturday", "open_time": "10:00", "close_time": "18:00"},
         )
         self.assertEqual(r.status_code, 302)
         self.assertTrue(
-            OpeningHours.objects.filter(restaurant=self.restaurant, day="weekends").exists()
+            OpeningHours.objects.filter(restaurant=self.restaurant, day="saturday").exists()
         )
 
     def test_owner_can_open_edit_opening_hours_page(self):
@@ -210,7 +210,7 @@ class OpeningHoursCrudAuthorizationTest(TestCase):
         self.client.login(username="owner_oh", password="pass12345")
         r = self.client.post(
             reverse("restaurants:edit_opening_hours", args=[self.oh.id]),
-            data={"day": "weekdays", "open_time": "08:30", "close_time": "16:30"},
+            data={"day": "monday", "open_time": "08:30", "close_time": "16:30"},
         )
         self.assertEqual(r.status_code, 302)
         self.oh.refresh_from_db()
