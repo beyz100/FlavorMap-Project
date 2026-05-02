@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-container page-container--narrow">
   <div class="section-card">
-    <span class="section-card__title">🍽️ Add a New Restaurant</span>
+    <span class="section-card__title" data-en="🍽️ Add a New Restaurant" data-tr="🍽️ Yeni Restoran Ekle">🍽️ Add a New Restaurant</span>
     <form class="fm-form" method="post" enctype="multipart/form-data" style="margin-top:0.75rem;">
       {% csrf_token %}
       {% for field in form %}
@@ -18,8 +18,8 @@
         {% endfor %}
       {% endfor %}
       <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;">
-        <button type="submit" class="btn btn-primary" id="create-restaurant-btn">Create Restaurant</button>
-        <a href="{% url 'restaurants:list' %}" class="btn btn-ghost" id="cancel-create-btn">Cancel</a>
+        <button type="submit" class="btn btn-primary" id="create-restaurant-btn" data-en="Create Restaurant" data-tr="Restoranı Oluştur">Create Restaurant</button>
+        <a href="{% url 'restaurants:list' %}" class="btn btn-ghost" id="cancel-create-btn" data-en="Cancel" data-tr="İptal">Cancel</a>
       </div>
     </form>
   </div>

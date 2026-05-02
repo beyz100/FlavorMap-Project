@@ -4,9 +4,9 @@
 {% block content %}
 <div class="page-container page-container--narrow">
   <div class="section-card">
-    <span class="section-card__title">🕐 Add Opening Hours</span>
+    <span class="section-card__title" data-en="🕐 Add Opening Hours" data-tr="🕐 Çalışma Saati Ekle">🕐 Add Opening Hours</span>
     <p style="color:var(--text-light); font-size:0.88rem; margin-bottom:1rem;">
-      for <a href="{% url 'restaurants:detail' restaurant.id %}" style="color:var(--primary); font-weight:600;">{{ restaurant.name }}</a>
+      <span data-en="for" data-tr="Restoran:">for</span> <a href="{% url 'restaurants:detail' restaurant.id %}" style="color:var(--primary); font-weight:600;">{{ restaurant.name }}</a>
     </p>
     <form class="fm-form" method="post">
       {% csrf_token %}
@@ -18,8 +18,8 @@
         {% endfor %}
       {% endfor %}
       <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;">
-        <button type="submit" class="btn btn-primary" id="add-hours-btn">Add Hours</button>
-        <a href="{% url 'restaurants:detail' restaurant.id %}" class="btn btn-ghost" id="cancel-hours-btn">Cancel</a>
+        <button type="submit" class="btn btn-primary" id="add-hours-btn" data-en="Add Hours" data-tr="Saatleri Ekle">Add Hours</button>
+        <a href="{% url 'restaurants:detail' restaurant.id %}" class="btn btn-ghost" id="cancel-hours-btn" data-en="Cancel" data-tr="İptal">Cancel</a>
       </div>
     </form>
   </div>
