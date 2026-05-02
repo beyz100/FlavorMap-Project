@@ -207,7 +207,7 @@
             ({{ review.rating }}/5)
           </span>
         {% endif %}
-        <span class="review-date">{{ review.created_at|date:"F d, Y" }}</span>
+        <span class="review-date" data-date="{{ review.created_at|date:'c' }}" data-date-format="long">{{ review.created_at|date:"F d, Y" }}</span>
       </div>
 
       <p class="review-comment">{{ review.comment }}</p>
@@ -240,7 +240,7 @@
         <div class="reply-card" id="reply-{{ reply.id }}">
           <div class="reply-header">
             <span class="reply-user">{{ reply.user.username }}</span>
-            <span class="reply-date">{{ reply.created_at|date:"F d, Y" }}</span>
+            <span class="reply-date" data-date="{{ reply.created_at|date:'c' }}" data-date-format="long">{{ reply.created_at|date:"F d, Y" }}</span>
           </div>
           <p class="reply-comment">{{ reply.comment }}</p>
           {% if user.is_authenticated and reply.user == user %}

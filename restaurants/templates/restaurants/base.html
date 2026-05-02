@@ -22,8 +22,6 @@
         <a href="{% url 'restaurants:contact' %}" class="fm-nav__link" data-en="Contact" data-tr="İletişim">Contact</a>
       </div>
       <div class="fm-nav__actions">
-        <button type="button" class="btn btn-ghost btn-sm" onclick="setLang('tr')" aria-label="Türkçe">TR</button>
-        <button type="button" class="btn btn-ghost btn-sm" onclick="setLang('en')" aria-label="English">ENG</button>
         {% if user.is_authenticated %}
           <span class="fm-nav__user">{{ user.username }}</span>
           <a href="{% url 'restaurants:profile' %}" class="btn btn-ghost btn-sm" data-en="Profile" data-tr="Profil">Profile</a>
@@ -35,6 +33,11 @@
           <a href="{% url 'login' %}" class="btn btn-ghost btn-sm" data-en="Log in" data-tr="Giriş Yap">Log in</a>
           <a href="{% url 'register' %}" class="btn btn-primary btn-sm" data-en="Register" data-tr="Kayıt Ol">Register</a>
         {% endif %}
+        <span class="fm-nav__lang">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setLang('tr')" aria-label="Türkçe">TR</button>
+          <span class="fm-nav__lang-sep">/</span>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setLang('en')" aria-label="English">ENG</button>
+        </span>
       </div>
     </div>
   </nav>
@@ -106,6 +109,20 @@
         const en = el.getAttribute("data-en-aria");
         const v = pick(en, tr, el.getAttribute("aria-label") || "");
         if (v) el.setAttribute("aria-label", v);
+      });
+
+      const locale = isTr ? "tr-TR" : "en-US";
+      const longOpts = { year: "numeric", month: "long", day: "numeric" };
+      const shortOpts = { year: "numeric", month: "short", day: "numeric" };
+      document.querySelectorAll("[data-date]").forEach((el) => {
+        const iso = el.getAttribute("data-date");
+        if (!iso) return;
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return;
+        const opts = el.getAttribute("data-date-format") === "short" ? shortOpts : longOpts;
+        try {
+          el.textContent = new Intl.DateTimeFormat(locale, opts).format(d);
+        } catch (e) {}
       });
     }
 

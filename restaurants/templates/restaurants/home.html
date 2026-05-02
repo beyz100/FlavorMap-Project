@@ -1,6 +1,7 @@
 {% extends 'restaurants/base.html' %}
 
 {% block content %}
+<div class="page-container">
 <style>
     .home-hero {
         text-align: center;
@@ -119,7 +120,7 @@
 </div>
 
 <!-- Top Rated Section -->
-<h2 data-en="⭐ Top Rated" data-tr="⭐ En Yüksek Puanlı">⭐ Top Rated</h2>
+<h2 class="section-heading" data-en="⭐ Top Rated" data-tr="⭐ En Yüksek Puanlı">⭐ Top Rated</h2>
 <div class="restaurant-grid">
     {% for restaurant in top_rated %}
         <a class="restaurant-card" href="{% url 'restaurants:detail' restaurant.id %}">
@@ -147,7 +148,7 @@
 </div>
 
 <!-- Newest Section -->
-<h2 data-en="🆕 Newest Additions" data-tr="🆕 En Yeni Eklenenler">🆕 Newest Additions</h2>
+<h2 class="section-heading" data-en="🆕 Newest Additions" data-tr="🆕 En Yeni Eklenenler">🆕 Newest Additions</h2>
 <div class="restaurant-grid">
     {% for restaurant in newest %}
         <a class="restaurant-card" href="{% url 'restaurants:detail' restaurant.id %}">
@@ -168,5 +169,6 @@
     {% empty %}
         <p data-en="No restaurants available yet." data-tr="Henüz restoran yok.">No restaurants available yet.</p>
     {% endfor %}
+</div>
 </div>
 {% endblock %}
