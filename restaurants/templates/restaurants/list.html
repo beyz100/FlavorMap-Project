@@ -43,14 +43,14 @@
 
     <select name="price" id="price-select" aria-label="Filter by price range" data-en-aria="Filter by price range" data-tr-aria="Fiyat aralığına göre filtrele">
       <option value="" data-en="All Prices" data-tr="Tüm Fiyatlar">All Prices</option>
-      <option value="1" {% if request.GET.price == "1" %}selected{% endif %} data-en="₺ Budget" data-tr="₺ Ekonomik">₺ Budget</option>
-      <option value="2" {% if request.GET.price == "2" %}selected{% endif %} data-en="₺₺ Mid-range" data-tr="₺₺ Orta">₺₺ Mid-range</option>
-      <option value="3" {% if request.GET.price == "3" %}selected{% endif %} data-en="₺₺₺ Premium" data-tr="₺₺₺ Üst segment">₺₺₺ Premium</option>
+      <option value="1" {% if request.GET.price == "1" %}selected{% endif %} data-en="₺" data-tr="₺">₺</option>
+      <option value="2" {% if request.GET.price == "2" %}selected{% endif %} data-en="₺₺" data-tr="₺₺">₺₺</option>
+      <option value="3" {% if request.GET.price == "3" %}selected{% endif %} data-en="₺₺₺" data-tr="₺₺₺">₺₺₺</option>
     </select>
 
     <select name="sort" id="sort-select" aria-label="Sort restaurants" data-en-aria="Sort restaurants" data-tr-aria="Restoranları sırala">
       <option value="" data-en="Default Order" data-tr="Varsayılan sıra">Default Order</option>
-      <option value="rating" {% if request.GET.sort == "rating" %}selected{% endif %} data-en="⭐ Highest Rating" data-tr="⭐ En yüksek puan">⭐ Highest Rating</option>
+      <option value="rating" {% if request.GET.sort == "rating" %}selected{% endif %} data-en="Highest Rating" data-tr="En yüksek puan">Highest Rating</option>
     </select>
 
     <button type="submit" class="btn btn-primary" id="filter-btn" data-en="Filter" data-tr="Filtrele">Filter</button>
